@@ -1,0 +1,11 @@
+Hay que preparar el Arduino IDE para trabajar con la placa ESP32+UWB
+
+Los pasos a seguir son los siguientes:
+
+1 - Instalar las boards de ESP32. Hay que ir a tools >> Board >> Board Manager >>  Buscar "ESP32". Descargar las placas de espressif Systems.
+
+2 - Añadir las librerías necesarias para esta placa:
+  2.1 - Descargar la carpeta DW1000 de este repositorio. Después, ir a Sketch >> Include Library >> Add .Zip library >> Y seleccionar la carpeta recién descargada.
+  2.2 - Añadir las librerías Adafruit_SSD1306. Ir a Sketch >> Include Library >> Manage Libraries >> Buscar Adafruit_SSD1306 e instalar.
+
+3 - Seleccionar la placa DOIT ESP32 DevKit
