@@ -2,10 +2,7 @@
 
 Códigos empleados para la elaboración del Trabajo de Fin de Grado. 
 
- <img src="https://cdn.worldvectorlogo.com/logos/arduino-1.svg" alt="arduino" width="60" height="60"/>
-
-<img src="https://github.com/jimmyperezp/TFG_UWB/blob/main/logo%20UWB.png" alt="arduino" width="60" height="60"/>
-
+ <img src="https://cdn.worldvectorlogo.com/logos/arduino-1.svg" alt="arduino" width="60" height="60"/> <img src="https://github.com/jimmyperezp/TFG_UWB/blob/main/logo%20UWB.png" alt="arduino" width="60" height="60"/>
 <img src="https://github.com/jimmyperezp/Programacion_de_sistemas/blob/main/logo%20escuela.png" alt="logo industriales" width="300" height="100"/> 
 
 
