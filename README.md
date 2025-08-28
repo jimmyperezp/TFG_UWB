@@ -11,8 +11,10 @@ Códigos empleados para la elaboración del Trabajo de Fin de Grado.
 1. [Objetivo del Proyecto](#objetivo)
 2. [Hardware Utilizado](#hardware)
 3. [Contenido del repositorio](#contenido-del-repositorio)
-4. [Estado del repositorio](#estado-del-repositorio)
+4. [Configuracion Arduino IDE](#configuracion-arduino)
+5. [Estado del repositorio](#estado-del-repositorio)
 
+<br></br>
 
 ## Objetivo 
 
@@ -26,6 +28,8 @@ Es importante tener clara la **nomenclatura** utilizada en el trabajo:
 
 1. ANCHOR --> Los Anchors son las anclas. Son las placas que se quedan "fijas" (o al menos, cuya posición es relativamente conocida)
 2. TAG --> Son las placas móviles. 
+
+<br></br>
 
 ## Hardware 
 
@@ -41,26 +45,16 @@ Estas llevan el chip DW1000 para la comunicación UWB:
 - [DW1000 Antenna Delay Calibration](https://www.decawave.com/wp-content/uploads/2018/10/APS014_Antennna-Delay-Calibration_V1.2.pdf)
 
 
-
-
-
-
-
+<br></br>
 
 ## Contenido del Repositorio: 
 
-1. Configuración de la ESP32. Ver paso a paso: [configurar el Arduino IDE](#configuracion-arduino)
+1. Configuración de la ESP32 para usar en el Arduino IDE. Ver paso a paso: [configurar el Arduino IDE](#configuracion-arduino)
 
 2. Medir distancias entre 1 tag y 1 anchor.  [Distancia entre 1 Tag y Anchor](Medir%20distancias)
     - En esta carpeta están los códigos utilizados para medir la distancia entre un tag y un anchor. Dentro de ella, hay un readme explicando el procedimiento. 
 
 
-<br></br>
-<br></br>
-<br></br>
-<br></br>
-<br></br>
-<br></br>
 
 ## Configuracion Arduino 
 
