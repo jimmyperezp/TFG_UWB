@@ -7,7 +7,7 @@ Códigos empleados para la elaboración del Trabajo de Fin de Grado.
 
 <br></br>
 
-## Índice:
+### Índice:
 1. [Objetivo del Proyecto](#objetivo)
 2. [Hardware Utilizado](#hardware)
 3. [Contenido del repositorio](#contenido-del-repositorio)
@@ -55,6 +55,8 @@ Estas llevan el chip DW1000 para la comunicación UWB:
     - En esta carpeta están los códigos utilizados para medir la distancia entre un tag y un anchor. Dentro de ella, hay un readme explicando el procedimiento. 
 
 
+
+<br></br>
 
 ## Configuracion Arduino 
 
