@@ -40,9 +40,11 @@ Las placas utilizadas son las desarrolladas por MakerFabs: [Placa ESP32-UWB Make
 
 ![Imagen Placa ESP32-UWB](https://github.com/Makerfabs/Makerfabs-ESP32-UWB/blob/main/md_pic/front.jpg?raw=true)
 
+El microcontrolador de estas placas es una ESP32
+- [ESP32 Wroom Datasheet](https://www.espressif.com/sites/default/files/documentation/esp32-wroom-32_datasheet_en.pdf)
 
 
-Estas llevan el chip DW1000 para la comunicación UWB: 
+Además, llevan el chip DW1000 para la comunicación UWB: 
 
 - [DW1000 Datasheet](https://www.qorvo.com/products/d/da007946)
 - [DW1000 User Manual](https://www.decawave.com/sites/default/files/resources/dw1000_user_manual_2.11.pdf)
