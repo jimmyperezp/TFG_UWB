@@ -8,7 +8,7 @@ Códigos empleados para la elaboración del Trabajo de Fin de Grado.
 <br></br>
 ## Contenido: 
 
-1. Configuración de la ESP32. Ver pasos en la carpeta "Arduino IDE" [configurar el Arduino IDE](# Configuracion Arduino )
+1. Configuración de la ESP32. Ver paso a paso: [configurar el Arduino IDE](# Configuracion Arduino )
 
 2. Medir distancias entre 2 placas 
 
