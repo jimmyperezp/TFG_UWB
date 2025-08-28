@@ -6,7 +6,48 @@ Códigos empleados para la elaboración del Trabajo de Fin de Grado.
 <img src="https://github.com/jimmyperezp/Programacion_de_sistemas/blob/main/logo%20escuela.png" alt="logo industriales" width="300" height="100"/> 
 
 <br></br>
-## Contenido: 
+
+## Índice:
+1. [Objetivo del Proyecto](#objetivo)
+2. [Hardware Utilizado](#hardware)
+3. [Contenido del repositorio](#contenido-del-repositorio)
+4. [Estado del repositorio](#estado-del-repositorio)
+
+
+## Objetivo 
+
+Este proyecto de fin de grado consiste en el estudio de la tecnología de Banda Ultra Ancha (Ultra Wide Band, o UWB) para su implementación en sistemas ferroviarios. Con su uso, se pretende controlar en todo momento la integridad del tren que lo lleve, así como la comunicación con otros sensores y elementos de medida del entorno para caracterizar e identificar posibles peligros. 
+
+Dentro de este repositorio se encuentran los códigos (librería incluida) utilizados para el desarrollo de la fase inicial del proyecto.  
+
+Esta fase inicial consiste en la comunicación y uso de varias placas ESP32 + UWB. Se verá desde los primeros pasos para configurarlas y utilizarlas, hasta la comunicación y uso de un sistema en el que se integren más de un elemento de cada tipo. 
+
+Es importante tener clara la **nomenclatura** utilizada en el trabajo: 
+
+1. ANCHOR --> Los Anchors son las anclas. Son las placas que se quedan "fijas" (o al menos, cuya posición es relativamente conocida)
+2. TAG --> Son las placas móviles. 
+
+## Hardware 
+
+Las placas utilizadas son las desarrolladas por MakerFabs: [Placa ESP32-UWB MakerFabs](https://www.makerfabs.com/esp32-uwb-ultra-wideband.html?srsltid=AfmBOoptL7z67ua57v7tP1AYSjEUQVG0_JfwDDH6NKWy50RSJLR1hWZG)
+
+![Imagen Placa ESP32-UWB](https://github.com/Makerfabs/Makerfabs-ESP32-UWB/blob/main/md_pic/front.jpg?raw=true)
+
+
+Estas llevan el chip DW1000 para la comunicación UWB: 
+
+- [DW1000 Datasheet](https://www.qorvo.com/products/d/da007946)
+- [DW1000 User Manual](https://www.decawave.com/sites/default/files/resources/dw1000_user_manual_2.11.pdf)
+- [DW1000 Antenna Delay Calibration](https://www.decawave.com/wp-content/uploads/2018/10/APS014_Antennna-Delay-Calibration_V1.2.pdf)
+
+
+
+
+
+
+
+
+## Contenido del Repositorio: 
 
 1. Configuración de la ESP32. Ver paso a paso: [configurar el Arduino IDE](#configuracion-arduino)
 
@@ -37,6 +78,7 @@ Los pasos a seguir son los siguientes:
 
 
 <br></br>
+
 ## Estado del repositorio
 El repositorio está activo. Iré actualizándolo y subiendo los códigos empleados a medida que se pruebe su funcionamiento
 
