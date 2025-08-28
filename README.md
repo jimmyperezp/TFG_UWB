@@ -2,8 +2,10 @@
 
 Códigos empleados para la elaboración del Trabajo de Fin de Grado. 
 
+<p align="center">
  <img src="https://cdn.worldvectorlogo.com/logos/arduino-1.svg" alt="arduino" width="60" height="60"/> <img src="https://github.com/jimmyperezp/TFG_UWB/blob/main/logo%20UWB.png" alt="arduino" width="60" height="60"/>
 <img src="https://github.com/jimmyperezp/Programacion_de_sistemas/blob/main/logo%20escuela.png" alt="logo industriales" width="300" height="100"/> 
+
 
 <br></br>
 
@@ -18,7 +20,7 @@ Códigos empleados para la elaboración del Trabajo de Fin de Grado.
 
 ## Objetivo 
 
-Este proyecto de fin de grado consiste en el estudio de la tecnología de Banda Ultra Ancha (Ultra Wide Band, o UWB) para su implementación en sistemas ferroviarios. Con su uso, se pretende controlar en todo momento la integridad del tren que lo lleve, así como la comunicación con otros sensores y elementos de medida del entorno para caracterizar e identificar posibles peligros. 
+Este proyecto de fin de grado consiste en el estudio de la tecnología de **Banda Ultra Ancha** (Ultra Wide Band, o **UWB**) para su implementación en sistemas ferroviarios. Con su uso, se pretende controlar en todo momento la integridad del tren que lo lleve, así como la comunicación con otros sensores y elementos de medida del entorno para caracterizar e identificar posibles peligros. 
 
 Dentro de este repositorio se encuentran los códigos (librería incluida) utilizados para el desarrollo de la fase inicial del proyecto.  
 
@@ -26,8 +28,8 @@ Esta fase inicial consiste en la comunicación y uso de varias placas ESP32 + UW
 
 Es importante tener clara la **nomenclatura** utilizada en el trabajo: 
 
-1. ANCHOR --> Los Anchors son las anclas. Son las placas que se quedan "fijas" (o al menos, cuya posición es relativamente conocida)
-2. TAG --> Son las placas móviles. 
+1. **ANCHOR**: Los Anchors son las anclas. Son las placas que se quedan "fijas" (o al menos, cuya posición es relativamente conocida)
+2. **TAG**: Son las placas móviles. 
 
 <br></br>
 
@@ -35,7 +37,9 @@ Es importante tener clara la **nomenclatura** utilizada en el trabajo:
 
 Las placas utilizadas son las desarrolladas por MakerFabs: [Placa ESP32-UWB MakerFabs](https://www.makerfabs.com/esp32-uwb-ultra-wideband.html?srsltid=AfmBOoptL7z67ua57v7tP1AYSjEUQVG0_JfwDDH6NKWy50RSJLR1hWZG)
 
+
 ![Imagen Placa ESP32-UWB](https://github.com/Makerfabs/Makerfabs-ESP32-UWB/blob/main/md_pic/front.jpg?raw=true)
+
 
 
 Estas llevan el chip DW1000 para la comunicación UWB: 
@@ -64,19 +68,19 @@ Hay que preparar el Arduino IDE para trabajar con la placa ESP32+UWB
 
 Los pasos a seguir son los siguientes:
 
-1 - Instalar las boards de ESP32. Hay que ir a tools >> Board >> Board Manager >>  Buscar "ESP32". Descargar las placas de espressif Systems.
+1 - **Instalar las boards de ESP32**. Hay que ir a tools >> Board >> Board Manager >>  Buscar "ESP32". Descargar las placas de espressif Systems.
 
-2 - Añadir las librerías necesarias para esta placa:
-  2.1 - Descargar la carpeta DW1000 de este repositorio. Después, ir a Sketch >> Include Library >> Add .Zip library >> Y seleccionar la carpeta recién descargada.
-  2.2 - Añadir las librerías Adafruit_SSD1306. Ir a Sketch >> Include Library >> Manage Libraries >> Buscar Adafruit_SSD1306 e instalar.
+2 - Añadir las **librerías** necesarias para esta placa:
+  - 2.1 - Descargar la carpeta DW1000 de este repositorio. Después, ir a Sketch >> Include Library >> Add .Zip library >> Y seleccionar la carpeta recién descargada.
+  - 2.2 - Añadir las librerías Adafruit_SSD1306. Ir a Sketch >> Include Library >> Manage Libraries >> Buscar Adafruit_SSD1306 e instalar.
 
-3 - Seleccionar la placa DOIT ESP32 DevKit
+3 - Seleccionar la **placa DOIT ESP32 DevKit**
 
 
 <br></br>
 
 ## Estado del repositorio
-El repositorio está activo. Iré actualizándolo y subiendo los códigos empleados a medida que se pruebe su funcionamiento
+El repositorio está **activo**. Iré actualizándolo y subiendo los códigos empleados a medida que se pruebe su funcionamiento
 
 <br></br>
 
