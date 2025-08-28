@@ -1,4 +1,4 @@
-# Trabajo Fin de Grado Jaime Pérez: Ulta Wide Band
+# Trabajo Fin de Grado Jaime Pérez: Ultra Wide Band
 
 Códigos empleados para la elaboración del Trabajo de Fin de Grado. 
 
@@ -8,7 +8,7 @@ Códigos empleados para la elaboración del Trabajo de Fin de Grado.
 <br></br>
 ## Contenido: 
 
-1. Configuración de la ESP32. Ver pasos en la carpeta "Arduino IDE" [configurar el Arduino IDE](# Configuracion Arduino )
+1. Configuración de la ESP32. Ver pasos en la carpeta "Arduino IDE" [configurar el Arduino IDE](#-Configuracion-Arduino )
 
 2. Medir distancias entre 2 placas 
 
