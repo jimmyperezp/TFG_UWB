@@ -10,7 +10,9 @@ Códigos empleados para la elaboración del Trabajo de Fin de Grado.
 
 1. Configuración de la ESP32. Ver paso a paso: [configurar el Arduino IDE](#configuracion-arduino)
 
-2. Medir distancias entre 2 placas 
+2. Medir distancias entre 1 tag y 1 anchor.  [Distancia entre 1 Tag y Anchor](Medir%20distancias)
+    - En esta carpeta están los códigos utilizados para medir la distancia entre un tag y un anchor. Dentro de ella, hay un readme explicando el procedimiento. 
+
 
 <br></br>
 <br></br>
