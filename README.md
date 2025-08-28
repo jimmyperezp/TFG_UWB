@@ -54,7 +54,7 @@ Además, llevan el chip DW1000 para la comunicación UWB:
 
 1. Configuración de la ESP32 para usar en el Arduino IDE. Ver paso a paso: [configurar el Arduino IDE](#configuracion-arduino)
 
-2. Medir distancias entre 1 tag y 1 anchor.  [Distancia entre 1 Tag y Anchor](Medir%20distancias)
+2. Medir distancias entre 1 tag y 1 anchor:  [Distancia entre 1 Tag y 1 Anchor](Medir%20distancias)
     - En esta carpeta están los códigos utilizados para medir la distancia entre un tag y un anchor. Dentro de ella, hay un readme explicando el procedimiento. 
 
 
@@ -81,6 +81,7 @@ Los pasos a seguir son los siguientes:
 ## Estado del repositorio
 El repositorio está activo. Iré actualizándolo y subiendo los códigos empleados a medida que se pruebe su funcionamiento
 
+<br></br>
 
 -------------
 Autor: Jaime Pérez.
