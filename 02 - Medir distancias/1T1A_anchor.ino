@@ -72,16 +72,8 @@ void newRange()
   // La función getDistantDevice() devuelve el objeto "device" con el que se ha hecho ranging. 
   // A este device puedo pedirle métodos como: getShortAddress, getAddress, getRange, etc.
 
-
-#define NUMBER_OF_DISTANCES 1
-// esta constante sirve para suavizar el ruido. Es el número de medidas que hago para calcular la distancia. 
-  float dist = 0.0;
-  for (int i = 0; i < NUMBER_OF_DISTANCES; i++) {
-    dist += DW1000Ranging.getDistantDevice()->getRange();
-  }
-  dist = dist/NUMBER_OF_DISTANCES;
   Serial.print("\t Distancia: ");
-  Serial.print(dist);
+  Serial.print(DW1000Ranging.getDistantDevice()->getRange());
   Serial.print(" m");
   Serial.print("\t RX power: ");
   Serial.println(DW1000Ranging.getDistantDevice()->getRXPower());
