@@ -1,6 +1,5 @@
-// currently tag is module #5
-// The purpose of this code is to set the tag address and antenna delay to default.
-// this tag will be used for calibrating the anchors.
+// 1 TAG - 1 ANCHOR
+// TAG
 
 #include <SPI.h>
 #include "DW1000Ranging.h"
