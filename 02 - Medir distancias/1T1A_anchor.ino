@@ -1,26 +1,19 @@
-//anchor #4 setup
-
-// be sure to edit anchor_addr and select the previously calibrated anchor delay
-// my naming convention is anchors 1, 2, 3, ... have the lowest order byte of the MAC address set to 81, 82, 83, ...
+//1 Tag y 1 Anchor: 
+// ANCHOR SETUP
 
 #include <SPI.h>
 #include "DW1000Ranging.h"
 #include "DW1000.h"
 
-// leftmost two bytes below will become the "short address"
+// Los 2 bytes de la izquierda son la short address.
 char anchor_addr[] = "84:00:5B:D5:A9:9A:E2:9C"; //#4
 
-//calibrated Antenna Delay setting for this anchor
+// Antenna Delay: Sustituir con el valor obtenido en la calibracion
 uint16_t Adelay = 16580;
 
-// previously determined calibration results for antenna delay
-// #1 16630
-// #2 16610
-// #3 16607
-// #4 16580
+// Valores obtenidos de calibraciones anteriores: 
+// 16635
 
-// calibration distance
-float dist_m = (285 - 1.75) * 0.0254; //meters
 
 #define SPI_SCK 18
 #define SPI_MISO 19
@@ -35,25 +28,36 @@ const uint8_t PIN_SS = 4;   // spi select pin
 void setup()
 {
   Serial.begin(115200);
-  delay(1000); //wait for serial monitor to connect
-  Serial.println("Anchor config and start");
-  Serial.print("Antenna delay ");
-  Serial.println(Adelay);
-  Serial.print("Calibration distance ");
-  Serial.println(dist_m);
+  delay(1000); // Le doy 1 segundo para el monitor serie
 
-  //init the configuration
+
+  // Inicializo la configuración: 
+
+  // 1: Inicializo el bus SPI con los pines indicados antes.
   SPI.begin(SPI_SCK, SPI_MISO, SPI_MOSI);
+
+  // 2: Inicializo el DW1000
   DW1000Ranging.initCommunication(PIN_RST, PIN_SS, PIN_IRQ); //Reset, CS, IRQ pin
 
-  // set antenna delay for anchors only. Tag is default (16384)
+
+  // Establezco el antenna delay indicado antes: 
+  // Internamente, escribirá el valor que le paso en un registro concreto del DW1000
   DW1000.setAntennaDelay(Adelay);
 
+
+  // CALLBACKS: 
+
   DW1000Ranging.attachNewRange(newRange);
+  //Esto es, básicamente: Cuando se termine una medición, lanza la función newRange.
   DW1000Ranging.attachNewDevice(newDevice);
   DW1000Ranging.attachInactiveDevice(inactiveDevice);
 
-  //start the module as an anchor, do not assign random short address
+  //inicio la placa como ANCHOR. los parámetros son: 
+  // dirección - modo de funcionamiento - ¿¿inicia la conversación??
+  // Lo de iniciar la conversación es importante para centralizar los datos en el anchor. 
+  // Si está en False --> Solo responde. Le preguntan el timestamp para hacer el TWR
+  // Si está en True --> Inicia la conversación (ver funcionamiento TWR). 
+
   DW1000Ranging.startAsAnchor(anchor_addr, DW1000.MODE_LONGDATA_RANGE_LOWPOWER, false);
   // DW1000Ranging.startAsAnchor(ANCHOR_ADD, DW1000.MODE_SHORTDATA_FAST_LOWPOWER);
   // DW1000Ranging.startAsAnchor(ANCHOR_ADD, DW1000.MODE_LONGDATA_FAST_LOWPOWER);
@@ -69,12 +73,16 @@ void loop()
 
 void newRange()
 {
+
+  //Muestro desde qué dispositivo se ha hecho el range
   Serial.print(" Desde: ");
   Serial.print(DW1000Ranging.getDistantDevice()->getShortAddress(), HEX);
-
+  // La función getDistantDevice() devuelve el objeto "device" con el que se ha hecho ranging. 
+  // A este device puedo pedirle métodos como: getShortAddress, getAddress, getRange, etc.
 
 
 #define NUMBER_OF_DISTANCES 1
+// esta constante sirve para suavizar el ruido. Es el número de medidas que hago para calcular la distancia. 
   float dist = 0.0;
   for (int i = 0; i < NUMBER_OF_DISTANCES; i++) {
     dist += DW1000Ranging.getDistantDevice()->getRange();
@@ -91,6 +99,7 @@ void newRange()
 
 void newDevice(DW1000Device *device)
 {
+  // La librería DW1000 lanza este callback cuando detecta una comunicación desde un device con shortAdress distinta a las que ha visto hasta entonces.
   Serial.print("Device added: ");
   Serial.println(device->getShortAddress(), HEX);
 }
