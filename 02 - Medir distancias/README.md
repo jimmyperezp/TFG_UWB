@@ -4,9 +4,6 @@
 Primera prueba en el desarrollo del TFG. Con estos códigos verificamos el funcionamiento de las placas y los fundamentos de la comunicación Anchor-Tag
 
  <img src="https://cdn.worldvectorlogo.com/logos/arduino-1.svg" alt="arduino" width="40" height="40"/> 
-<br></br>
-
- 
 
 ## Procedimiento: 
 
