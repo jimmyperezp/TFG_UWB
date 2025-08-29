@@ -9,6 +9,8 @@ Primera prueba en el desarrollo del TFG. Con estos códigos verificamos el funci
 
 El primer paso es la **Calibración**. El objetivo es establecer un *Antenna Delay* correcto en cada anchor. De esta manera, se consiguen medidas mucho más fiables. 
 
+- [DW1000 Antenna Delay Calibration](https://www.decawave.com/wp-content/uploads/2018/10/APS014_Antennna-Delay-Calibration_V1.2.pdf)
+
 Una vez conocido el valor del *Antenna Delay* en cada Anchor, ya se puede realizar la medida de la distancia entre ambas placas. 
 
 
