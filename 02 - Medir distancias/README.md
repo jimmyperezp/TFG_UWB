@@ -21,13 +21,19 @@ Este procedimiento, **paso a paso**, es el siguiente:
 2. Subirle al Tag el código 1T1A_Tag.ino
 
 3. Subirle al Anchor el código Anchor_autocalibrate.ino
-    - Dentro de este código hay indicar la distancia a la que hemos situado las placas: Hay que cambiar la variable: *float this_anchor_target_distance = (distancia en metros)*;
+    - Dentro de este código hay indicar la distancia a la que hemos situado las placas: Hay que cambiar la variable *this_anchor_target_distance* 
+    ```C
+    float this_anchor_target_distance = (distancia en metros);
+    ```
 
 4. Una vez ambas placas tengan el código subido, pulsar el boton de reset para establecer la comunicación. 
 
 5. En el monitor serie del anchor, me devolverá el *Antenna Delay* que ha medido el programa. Este es el parámetro buscado. 
 6. Una vez conocido el *Antenna Delay*, le subo al anchor el código 1T1A_Anchor.ino. 
     - Dentro de este, debo modificar el valor recién medido: Hay que cambiar la variable *Adelay*, situada al comienzo del código. Basta con ponerle el valor medido en la calibración anterior. 
+    ```C
+    uint16_t Adelay = (Valor medido en calibracion);
+    ```
 
 <br></br>
 
