@@ -7,8 +7,6 @@ Códigos empleados para la elaboración del Trabajo de Fin de Grado.
 <img src="https://github.com/jimmyperezp/Programacion_de_sistemas/blob/main/logo%20escuela.png" alt="logo industriales" width="300" height="100"/> 
 
 
-<br></br>
-
 ### Índice:
 1. [Objetivo del Proyecto](#objetivo)
 2. [Hardware Utilizado](#hardware)
@@ -89,4 +87,4 @@ El repositorio está **activo**. Iré actualizándolo y subiendo los códigos em
 -------------
 Autor: Jaime Pérez.
 
-Última modificación: 27/08/2025
+Última modificación: 29/08/2025
