@@ -1,8 +1,3 @@
-/*
-
-For ESP32 UWB or ESP32 UWB Pro
-
-*/
 
 #include <SPI.h>
 #include <DW1000Ranging.h>
