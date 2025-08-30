@@ -7,7 +7,8 @@
 
 // Los 2 bytes de la izquierda son la short address.
 // NOMENCLATURA: A para Anchors, B para Tags
-char anchor_addr[] = "A1:00:5B:D5:A9:9A:E2:9C"; 
+#define ANCHOR_ADD "82:17:5B:D5:A9:9A:E2:9C"// modify the address when multiple anchors, such as 83/82
+
 
 // Antenna Delay: Sustituir con el valor obtenido en la calibracion
 uint16_t Adelay = 16580;
@@ -49,7 +50,7 @@ void setup(){
   // dirección - modo de funcionamiento - ¿Tomar dirección aleatoria? 
   // La dirección aleatoria sirve para pruebas "rapidas". Así evito tener que estar cambiando todas las direcciones.
   
-  DW1000Ranging.startAsAnchor(anchor_addr, DW1000.MODE_LONGDATA_RANGE_LOWPOWER, false);
+  DW1000Ranging.startAsAnchor(ANCHOR_ADD, DW1000.MODE_LONGDATA_RANGE_LOWPOWER, false);
   // DW1000Ranging.startAsAnchor(ANCHOR_ADD, DW1000.MODE_SHORTDATA_FAST_LOWPOWER);
   // DW1000Ranging.startAsAnchor(ANCHOR_ADD, DW1000.MODE_LONGDATA_FAST_LOWPOWER);
   // DW1000Ranging.startAsAnchor(ANCHOR_ADD, DW1000.MODE_SHORTDATA_FAST_ACCURACY);
