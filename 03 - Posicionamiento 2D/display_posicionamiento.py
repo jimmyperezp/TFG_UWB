@@ -1,5 +1,6 @@
-import time
 import turtle
+import time
+
 import cmath
 import socket
 import json
@@ -210,4 +211,3 @@ def main():
 if __name__ == '__main__':
     main()
 
-    
