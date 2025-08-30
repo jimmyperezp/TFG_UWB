@@ -1,5 +1,5 @@
-//1 Tag y 1 Anchor: 
-// ANCHOR SETUP
+//Posicionamiento 2D
+// Código del ANCHOR 1:
 
 #include <SPI.h>
 #include "DW1000Ranging.h"
@@ -7,8 +7,7 @@
 
 // Los 2 bytes de la izquierda son la short address.
 // NOMENCLATURA: A para Anchors, B para Tags
-#define ANCHOR_ADD "82:17:5B:D5:A9:9A:E2:9C"// modify the address when multiple anchors, such as 83/82
-
+#define ANCHOR_ADD "82:17:5B:D5:A9:9A:E2:9C" // esta es el anchor1. Para el anchor2, sustituir el "82" por "83"
 
 // Antenna Delay: Sustituir con el valor obtenido en la calibracion
 uint16_t Adelay = 16580;
