@@ -46,11 +46,9 @@ void setup(){
   DW1000Ranging.attachInactiveDevice(inactiveDevice);
 
   //inicio la placa como ANCHOR. los parámetros son: 
-  // dirección - modo de funcionamiento - ¿¿inicia la conversación??
-  // Lo de iniciar la conversación es importante para centralizar los datos en el anchor. 
-  // Si está en False --> Solo responde. Le preguntan el timestamp para hacer el TWR
-  // Si está en True --> Inicia la conversación (ver funcionamiento TWR). 
-
+  // dirección - modo de funcionamiento - ¿Tomar dirección aleatoria? 
+  // La dirección aleatoria sirve para pruebas "rapidas". Así evito tener que estar cambiando todas las direcciones.
+  
   DW1000Ranging.startAsAnchor(anchor_addr, DW1000.MODE_LONGDATA_RANGE_LOWPOWER, false);
   // DW1000Ranging.startAsAnchor(ANCHOR_ADD, DW1000.MODE_SHORTDATA_FAST_LOWPOWER);
   // DW1000Ranging.startAsAnchor(ANCHOR_ADD, DW1000.MODE_LONGDATA_FAST_LOWPOWER);
