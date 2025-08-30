@@ -16,8 +16,10 @@ const uint8_t PIN_IRQ = 34; // irq pin
 const uint8_t PIN_SS = 4;   // spi select pin
 
 // TAG antenna delay defaults to 16384
-// leftmost two bytes below will become the "short address"
-char tag_addr[] = "7D:00:22:EA:82:60:3B:9C";
+
+// Los 2 bytes de la izquierda son la short address.
+// NOMENCLATURA: A para Anchors, B para Tags
+char tag_addr[] = "B1:00:22:EA:82:60:3B:9C";
 
 void setup()
 {
