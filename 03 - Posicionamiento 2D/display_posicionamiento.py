@@ -184,17 +184,17 @@ def main():
         list = read_data()
 
         for one in list:
-            if one["A"] == "1782":
+            if one["A"] == "17A1":
                 clean(t_a1)
                 a1_range = uwb_range_offset(float(one["R"]))
-                draw_uwb_anchor(-250, 150, "A1782(0,0)", a1_range, t_a1)
+                draw_uwb_anchor(-250, 150, "A1(0,0)", a1_range, t_a1)
                 node_count += 1
 
-            if one["A"] == "1783":
+            if one["A"] == "17A2":
                 clean(t_a2)
                 a2_range = uwb_range_offset(float(one["R"]))
                 draw_uwb_anchor(-250 + meter2pixel * distance_a1_a2,
-                                150, "A1783(" + str(distance_a1_a2)+")", a2_range, t_a2)
+                                150, "A2(" + str(distance_a1_a2)+")", a2_range, t_a2)
                 node_count += 1
 
         if node_count == 2:
