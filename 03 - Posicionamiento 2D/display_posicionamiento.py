@@ -103,15 +103,15 @@ def clean(t=turtle):
 
 
 def draw_ui(t):
-    write_txt(-300, 250, "UWB Positon", "black",  t, f=('Arial', 32, 'normal'))
-    fill_rect(-400, 200, 800, 40, "black", t)
-    write_txt(-50, 205, "WALL", "yellow",  t, f=('Arial', 24, 'normal'))
+    write_txt(-120, 220, "UWB Positioning", "orange",  t, f=('Arial', 28, 'normal'))
+    fill_rect(-400, 150, 800, 50, "black", t)
+    write_txt(-250, 155, "Posicionamiento 2D - Jaime Pérez", "yellow",  t, f=('Arial', 24, 'normal'))
 
 
 def draw_uwb_anchor(x, y, txt, range, t):
     r = 20
-    fill_cycle(x, y, r, "green", t)
-    write_txt(x + r, y, txt + ": " + str(range) + "M",
+    fill_cycle(x+20, y-50, r, "purple", t)
+    write_txt(x+20 + r, y-50, txt + ": " + str(range) + "M",
               "black",  t, f=('Arial', 16, 'normal'))
 
 
@@ -119,8 +119,8 @@ def draw_uwb_tag(x, y, txt, t):
     pos_x = -250 + int(x * meter2pixel)
     pos_y = 150 - int(y * meter2pixel)
     r = 20
-    fill_cycle(pos_x, pos_y, r, "blue", t)
-    write_txt(pos_x, pos_y, txt + ": (" + str(x) + "," + str(y) + ")",
+    fill_cycle(pos_x+20, pos_y-50, r, "blue", t)
+    write_txt(pos_x+20, pos_y-50, txt + ": (" + str(x) + "," + str(y) + ")",
               "black",  t, f=('Arial', 16, 'normal'))
 
 
