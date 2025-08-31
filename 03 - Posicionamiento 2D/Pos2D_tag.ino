@@ -1,4 +1,13 @@
+/* POSICIONAMIENTO 2D: TAG
 
+Este código necesita ser modificado: líneas 22-24
+    1) Introducir SSID
+    2) Introducir contraseña del wifi
+    3) Ir a la terminal -> lanzar ipconfig -> copiar el IPv4
+
+Una vez subidos los códigos de los anchors y el tag, ejecutar el display (archivo python). Se quedará esperando hasta que pulsemos el botón de "reset" de la placa del tag, para comenzar la comunicación. 
+
+*/
 #include <SPI.h>
 #include <DW1000Ranging.h>
 #include <WiFi.h>
@@ -11,9 +20,9 @@
 #define PIN_RST 27
 #define PIN_IRQ 34
 
-const char *ssid = "MiFibra-EDB0";
-const char *password = "jvC53hr2";
-const char *host = " 192.168.1.137";
+const char *ssid = "ssid"; 
+const char *password = "password";  
+const char *host = "IPv4";  // CMD --> ipconfig --> leer IPv4
 WiFiClient client;
 
 struct MyLink *uwb_data;
