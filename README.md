@@ -58,7 +58,7 @@ Además, llevan el chip DW1000 para la comunicación UWB:
 2. Medir distancias entre 1 tag y 1 anchor:  [Distancia entre 1 Tag y 1 Anchor](Medir%20distancias)
     - En esta carpeta están los códigos utilizados para medir la distancia entre un tag y un anchor. Dentro de ella, hay un readme explicando el procedimiento. 
 
-3. Posicionamiento 2D: [Demo de makerFabs](https://www.instructables.com/ESP32-UWB-Indoor-Positioning-Test/)
+3. Plottear la posición entre 1 tag y 2 anchors:  [Posicionamiento 2D](03%20-%20Posicionamiento%202D)
     - Este ejemplo consiste en mostrar mediante un programa de python la posición relativa entre 2 anchors y 1 tag. Utiliza el módulo WiFi de la ESP32 para enviar datos al PC. 
 
 <br></br>
