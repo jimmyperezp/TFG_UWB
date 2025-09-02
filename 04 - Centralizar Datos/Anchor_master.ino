@@ -71,13 +71,16 @@ void setup(){
     DW1000Ranging.attachNewRange(newRange);
     DW1000Ranging.attachNewDevice(newDevice);
     DW1000Ranging.attachInactiveDevice(inactiveDevice);   
-    DW1000Ranging.attachModeChangeRequestHandler(ModeChangeRequest);
 
     
     if (IS_MASTER){
         startAsMasterAnchor();
     }
-    else startAsSlaveAnchor();  
+    else{
+        
+        DW1000Ranging.attachModeChangeRequest(ModeChangeRequest);
+        startAsSlaveAnchor();  
+    } 
 }
 
 int buscarDispositivo(uint16_t sa){
