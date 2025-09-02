@@ -1,8 +1,9 @@
 /* CENTRALIZAR DATOS EN UN ANCHOR */
 
-/*Este es el código para el/los anchor(s). Hay que configurar uno de ellos 
+/*Este es el código para el/los anchor(s).  Hay que configurar uno de ellos 
 como el maestro, y el resto como esclavos. 
-Esto lo hago cambiando la constante IS_MASTER de true a false según sea.*/
+Esto lo hago cambiando la constante IS_MASTER de true a false según sea.
+Además, debo variar también el ANCHOR_ADD del resto para que no coincidan*/
 
 #include <SPI.h>
 #include "DW1000Ranging.h"
@@ -19,7 +20,7 @@ const uint8_t PIN_IRQ = 34; // irq pin
 const uint8_t PIN_SS = 4;   // spi select pin
 
 // Definiciones propias del Anchor:
-#define ANCHOR_ADD "A1:17:5B:D5:A9:9A:E2:9C" 
+#define ANCHOR_ADD "A1:00:5B:D5:A9:9A:E2:9C" 
 uint16_t Adelay = 16580;
 #define IS_MASTER true
 //#define IS_MASTER false
@@ -113,15 +114,18 @@ void registrarMedida(uint16_t sa, float dist, float rx_pwr){
 
 void MostrarDatos(){
 
-    for (int i = 0; i < numDispositivos ; i++){
-
+    Serial.println("--------- NUEVA MEDIDA ---------");
+    
+    for (int i = 0; i < numDispositivos ; i++){ 
         Serial.print(" Desde: ");
         Serial.print(medidas[i].shortAddr,HEX);
         Serial.print("\t Distancia: ");
         Serial.print(medidas[i].distancia);
         Serial.print(" m \t RX power: ");
-        Serial.println(medidas[i].rxPower);
+        Serial.print(medidas[i].rxPower);
+        Serial.println(" dBm");
     }
+    Serial.println("--------------------------------");
 }
 
 
