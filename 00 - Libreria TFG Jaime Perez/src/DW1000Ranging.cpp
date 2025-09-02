@@ -466,7 +466,7 @@ void DW1000RangingClass::loop() {
 				(*_handleModeChangeRequest)(toTag);
     		}
 
-    		return;
+    	return;
 		}
 
 		}
@@ -940,6 +940,45 @@ void DW1000RangingClass::transmitRangeFailed(DW1000Device* myDistantDevice) {
 	copyShortAddress(_lastSentToShortAddress, myDistantDevice->getByteShortAddress());
 	transmit(data);
 }
+
+void DW1000RangingClass::transmitModeSwitch(bool toTag, DW1000Device* device){
+
+	//1: Prepare for new transmission:
+	transmitInit(); 
+	//Resets ack flag and sets default parameters (power, bit rate, preamble)
+
+	byte dest[2]; 
+	//Here, I'll code the message's destination. 
+
+	//2: Select destination: unicast or broadcast:
+	if (device == nullptr){
+		//If nullptr --> Broadcasting. 
+		// The message will be sent to all devices that are listening. 
+		dest[0] = 0xFF;
+		dest[1] = 0xFF;
+		//According to the IEEE standard used, shortAddress 0xFF 0xFF is reserved as a broadcast, so that all nodes receive the message.
+	}
+	else{
+		//If not -> Unicast to the device's address
+		//memcpy function parameters: destiny, origin, number of bytes
+		memcpy(dest,device->getByteShortAddress(),2);
+		//This function copies n bytes from the origin to the destiny.
+	}
+
+	//3: Generate shortMacFrame:
+	_globalMac.generateShortMACFrame(data, _currentShortAddress, dest);
+
+	//4: Insert the payload (message to send)
+	/* Byte #0 = MODE_SWITCH code
+	   Byte #1 -> 0 = switch to anchor. 1 = to tag.
+	*/
+
+	data[SHORT_MAC_LEN] = MODE_SWITCH;
+	data[SHORT_MAC_LEN+1] = toTag ? 1:0;
+
+	transmit(data); //the data is sent via UWB
+}
+
 
 void DW1000RangingClass::receiver() {
 	DW1000.newReceive();

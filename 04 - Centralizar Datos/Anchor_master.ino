@@ -20,7 +20,7 @@ const uint8_t PIN_IRQ = 34; // irq pin
 const uint8_t PIN_SS = 4;   // spi select pin
 
 // Definiciones propias del Anchor:
-#define ANCHOR_ADD "A1:00:5B:D5:A9:9A:E2:9C" 
+#define DEVICE_ADDR "A1:00:5B:D5:A9:9A:E2:9C" 
 uint16_t Adelay = 16580;
 #define IS_MASTER true
 //#define IS_MASTER false
@@ -49,12 +49,12 @@ const unsigned long refresh_time = 1000; //Hago un print cada 1000 ms
 void startAsMasterAnchor(){
     //Esto es, que el anchor inicie la comunicación. 
     // En la librería, eso lo llaman: actuar como un tag: 
-    DW1000Ranging.startAsTag(ANCHOR_ADD,DW1000.MODE_LONGDATA_RANGE_LOWPOWER, false);
+    DW1000Ranging.startAsTag(DEVICE_ADDR,DW1000.MODE_LONGDATA_RANGE_LOWPOWER, false);
 }
 
 void startAsSlaveAnchor(){
     //En la inicialización, no quiero que esté haciendo poll. Comienza como anchor "normal". Responderá al anchor maestro para medir la posición entre ambos.
-    DW1000Ranging.startAsAnchor(ANCHOR_ADD,DW1000.MODE_LONGDATA_RANGE_LOWPOWER, false);
+    DW1000Ranging.startAsAnchor(DEVICE_ADDR,DW1000.MODE_LONGDATA_RANGE_LOWPOWER, false);
 }
 
 void setup(){
@@ -71,6 +71,8 @@ void setup(){
     DW1000Ranging.attachNewRange(newRange);
     DW1000Ranging.attachNewDevice(newDevice);
     DW1000Ranging.attachInactiveDevice(inactiveDevice);   
+    DW1000Ranging.attachModeChangeRequestHandler(ModeChangeRequest);
+
     
     if (IS_MASTER){
         startAsMasterAnchor();
@@ -112,6 +114,13 @@ void registrarMedida(uint16_t sa, float dist, float rx_pwr){
     }
 }
 
+void ModeChangeRequest(bool toTag){
+
+    if(toTag){
+        Serial.println("Dispositivo cambiado a TAG");
+        DW1000Ranging.startAsTag(DEVICE_ADDR,DW1000.MODE_LONGDATA_RANGE_LOWPOWER, false);
+    }
+}
 void MostrarDatos(){
 
     Serial.println("--------- NUEVA MEDIDA ---------");

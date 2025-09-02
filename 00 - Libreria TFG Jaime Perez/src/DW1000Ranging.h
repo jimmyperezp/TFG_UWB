@@ -126,6 +126,8 @@ public:
 	//FOR DEBUGGING
 	static void visualizeDatas(byte datas[]);
 
+	//To request a switch in mode operation. 
+	void transmitModeSwitch(bool toTag, DW1000Device* device = nullptr);
 
 private:
 	//other devices in the network
