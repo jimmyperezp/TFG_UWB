@@ -19,9 +19,7 @@ const uint8_t PIN_SS = 4;   // spi select pin
 // Definiciones propias del Anchor:
 #define ANCHOR_ADD "A1:17:5B:D5:A9:9A:E2:9C" 
 uint16_t Adelay = 16580;
-#define IS_MASTER true;
-
-
+#define IS_MASTER true
 
 // Estructura para gestionar las medidas recibidas en el maestro.
 struct Medida {
@@ -30,10 +28,19 @@ struct Medida {
     float rxPower;        // Última potencia recibida (dBm)
 };
 
-#define CANT_DISPOSITIVOS 5
-Medida medidas[CANT_DISPOSITIVOS];
+//Variables y constantes para registrar las medidas recibidas
+#define MAX_DISPOSITIVOS 5
+Medida medidas[MAX_DISPOSITIVOS];
 int numDispositivos = 0;
 
+//Variables y constantes para mostrar los resultados por el monitor serie:
+unsigned long last_print = 0;   // Momento del último print
+unsigned long current_time = 0; // Instante actual. Lo usaré para calcular las diferencias
+const unsigned long refresh_time = 1000; //Hago un print cada 1000 ms 
+
+
+
+//CÓDIGO:
 
 void startAsMasterAnchor(){
     //Esto es, que el anchor inicie la comunicación. 
@@ -67,25 +74,63 @@ void setup(){
     else startAsSlaveAnchor();  
 }
 
-void registrarMedida(uint16_t shortAddress, float dist, float rx){
+int buscarDispositivo(uint16_t sa){
+    
+    for (int i=0 ; i < numDispositivos ; i++){
 
-    int i = 0;
-
-    for i = 0
-        if medidas[i].shortAddr == shortAddress{
-
-            medidas[i].
+        if (medidas[i].shortAddr == sa) {
+            return i; 
+            // Si sí que hay coincidencia, devuelve el índice
         }
-
+    }
+    return -1; //si no se ha encontrado coincidencia
 }
+
+void registrarMedida(uint16_t sa, float dist, float rx_pwr){
+
+    int index = buscarDispositivo(sa);
+
+    if (index != -1){ //Esto es: si sí que hay coincidencia
+
+        medidas[index].distancia = dist; 
+        medidas[index].rxPower = rx_pwr; 
+
+    }
+    else if (numDispositivos < MAX_DISPOSITIVOS){
+        //Si no hay coincidencia, registro uno nuevo:
+        medidas[numDispositivos].shortAddr = sa;
+        medidas[numDispositivos].distancia = dist;
+        medidas[numDispositivos].rxPower = rx_pwr;
+        numDispositivos ++; //aumento en 1 la lista de dispositivos registrados.
+    }
+    else{
+        Serial.println("Lista de dispositivos llena");
+    }
+}
+
+void MostrarDatos(){
+
+
+
+    for (int i = 0; i < numDispositivos ; i++){
+
+        Serial.print(" Desde: ");
+        Serial.print(medidas[i].shortAddr,HEX);
+        Serial.print("\t Distancia: ");
+        Serial.print(medidas[i].distancia);
+        Serial.print(" m \t RX power: ");
+        Serial.println(medidas[i].rxPower);
+    }
+}
+
 
 void newRange(){
 
     uint16_t sa = DW1000Ranging.getDistantDevice()->getShortAddress();
-    float distancia = DW1000Ranging.getDistantDevice()->getRange();
+    float dist = DW1000Ranging.getDistantDevice()->getRange();
     float rx_pwr = DW1000Ranging.getDistantDevice()->getRXPower();
 
-    registrarMedida(sa, distancia, rx_pwr);
+    registrarMedida(sa, dist, rx_pwr);
 
 }
 
@@ -104,8 +149,14 @@ void inactiveDevice(DW1000Device *device){
     Serial.println(device->getShortAddress(), HEX);
 }
 
+void loop(){
 
+    current_time = millis();
+    if(current_time - last_print >= refresh_time){
 
-
+        MostrarDatos();
+        last_print = millis();
+    }
+}
 
 
