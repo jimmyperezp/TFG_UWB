@@ -469,7 +469,7 @@ void DW1000RangingClass::loop() {
     	return;
 		}
 
-		}
+		
 		else if(messageType == BLINK && _type == ANCHOR) {
 			byte address[8];
 			byte shortAddress[2];
@@ -696,6 +696,23 @@ void DW1000RangingClass::loop() {
 		}
 		
 	}
+
+	//Lanzar el cambio del anchor_slave cada 10 segundos.
+    static unsigned long lastModeSwitch = 0;
+    const unsigned long modeSwitchInterval = 10000; // 10 segundos
+    static bool currentModeIsTag = false;
+
+    unsigned long now = millis();
+    if (_type == ANCHOR && (now - lastModeSwitch >= modeSwitchInterval)) {
+        lastModeSwitch = now;
+        currentModeIsTag = !currentModeIsTag;
+
+        // 1. Ejecutar el callback si está registrado
+        if (_handleModeChangeRequest) {
+            _handleModeChangeRequest(currentModeIsTag); // true = TAG, false = ANCHOR
+        }
+		
+    }
 }
 
 void DW1000RangingClass::useRangeFilter(boolean enabled) {
