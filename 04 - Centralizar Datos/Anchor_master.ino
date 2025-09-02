@@ -24,14 +24,14 @@ uint16_t Adelay = 16580;
 
 
 // Estructura para gestionar las medidas recibidas en el maestro.
-struct Dispositivo {
+struct Medida {
     uint16_t shortAddr;   // ID del dispositivo desde el que se recibe
     float distancia;      // Última distancia medida (m)
     float rxPower;        // Última potencia recibida (dBm)
 };
 
 #define CANT_DISPOSITIVOS 5
-Dispositivo dispositivos[CANT_DISPOSITIVOS];
+Medida medidas[CANT_DISPOSITIVOS];
 int numDispositivos = 0;
 
 
@@ -39,7 +39,7 @@ void startAsMasterAnchor(){
     //Esto es, que el anchor inicie la comunicación. 
     // En la librería, eso lo llaman: actuar como un tag: 
     startAsTag(ANCHOR_ADD,DW1000.MODE_LONGDATA_RANGE_LOWPOWER, false);
- }
+}
 
 void startAsSlaveAnchor(){
     //En la inicialización, no quiero que esté haciendo poll. Comienza como anchor "normal". Responderá al anchor maestro para medir la posición entre ambos.
@@ -65,8 +65,19 @@ void setup(){
         startAsMasterAnchor();
     }
     else startAsSlaveAnchor();  
- }
+}
 
+void registrarMedida(uint16_t shortAddress, float dist, float rx){
+
+    int i = 0;
+
+    for i = 0
+        if medidas[i].shortAddr == shortAddress{
+
+            medidas[i].
+        }
+
+}
 
 void newRange(){
 
@@ -80,17 +91,17 @@ void newRange(){
 
 void newDevice(DW1000Device *device){
 
-  // La librería DW1000 lanza este callback cuando detecta una comunicación desde un device con shortAdress distinta a las que ha visto hasta entonces.
-  Serial.print("Nuevo dispositivo: ");
-  Serial.println(device->getShortAddress(), HEX);
+    // La librería DW1000 lanza este callback cuando detecta una comunicación desde un device con shortAdress distinta a las que ha visto hasta entonces.
+    Serial.print("Nuevo dispositivo: ");
+    Serial.println(device->getShortAddress(), HEX);
 }
 
 void inactiveDevice(DW1000Device *device){
 
-  //Dentro de DWdevice.h, se define el inactivity_time como 1s.
-  // Si pasa ese tiempo sin señal de un dispositivo que ya había registrado antes, lo considero inactivo. 
-  Serial.print("Conexión perdida con el dispositivo: ");
-  Serial.println(device->getShortAddress(), HEX);
+    //Dentro de DWdevice.h, se define el inactivity_time como 1s.
+    // Si pasa ese tiempo sin señal de un dispositivo que ya había registrado antes, lo considero inactivo. 
+    Serial.print("Conexión perdida con el dispositivo: ");
+    Serial.println(device->getShortAddress(), HEX);
 }
 
 
