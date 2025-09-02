@@ -42,6 +42,7 @@
 #define RANGE_FAILED 255
 #define BLINK 4
 #define RANGING_INIT 5
+#define MODE_SWITCH 6 //Para solicitar cambio en modo comportamiento.
 
 #define LEN_DATA 90
 
@@ -114,6 +115,9 @@ public:
 	
 	static void attachInactiveDevice(void (* handleInactiveDevice)(DW1000Device*)) { _handleInactiveDevice = handleInactiveDevice; };
 	
+	static void attachModeChangeRequest(void (* handleModeChange)(bool toTag)){
+		_handleModeChangeRequest = handleModeChange;
+	}
 	
 	
 	static DW1000Device* getDistantDevice();
@@ -134,12 +138,15 @@ private:
 	static DW1000Mac    _globalMac;
 	static int32_t      timer;
 	static int16_t      counterForBlink;
-	
+	static bool 		_lastFrameWasLong;
 	//Handlers:
 	static void (* _handleNewRange)(void);
 	static void (* _handleBlinkDevice)(DW1000Device*);
 	static void (* _handleNewDevice)(DW1000Device*);
 	static void (* _handleInactiveDevice)(DW1000Device*);
+
+	static void (* _handleModeChangeRequest)(bool toTag);
+
 	
 	//sketch type (tag or anchor)
 	static int16_t          _type; //0 for tag and 1 for anchor

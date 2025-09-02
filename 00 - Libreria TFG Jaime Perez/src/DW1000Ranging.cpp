@@ -84,6 +84,7 @@ void (* DW1000RangingClass::_handleNewRange)(void) = 0;
 void (* DW1000RangingClass::_handleBlinkDevice)(DW1000Device*) = 0;
 void (* DW1000RangingClass::_handleNewDevice)(DW1000Device*) = 0;
 void (* DW1000RangingClass::_handleInactiveDevice)(DW1000Device*) = 0;
+void (* DW1000RangingClass::_handleModeChangeRequest)(bool toTag) = 0;
 
 /* ###########################################################################
  * #### Init and end #######################################################
@@ -362,10 +363,12 @@ int16_t DW1000RangingClass::detectMessageType(byte datas[]) {
 	}
 	else if(datas[0] == FC_1 && datas[1] == FC_2) {
 		//we have a long MAC frame message (ranging init)
+		_lastFrameWasLong = true;
 		return datas[LONG_MAC_LEN];
 	}
 	else if(datas[0] == FC_1 && datas[1] == FC_2_SHORT) {
 		//we have a short mac frame message (poll, range, range report, etc..)
+		_lastFrameWasLong = false;
 		return datas[SHORT_MAC_LEN];
 	}
 	return -1; // Default return value to prevent compilation error
@@ -454,7 +457,20 @@ void DW1000RangingClass::loop() {
 		int messageType = detectMessageType(data);
 		
 		//we have just received a BLINK message from tag
-		if(messageType == BLINK && _type == ANCHOR) {
+		if(messageType == MODE_SWITCH){
+			int headerLen = _lastFrameWasLong ? LONG_MAC_LEN : SHORT_MAC_LEN;
+			bool toTag = (data[headerLen + 1] == 1);
+
+			if (_handleModeChangeRequest) {
+				
+				(*_handleModeChangeRequest)(toTag);
+    		}
+
+    		return;
+		}
+
+		}
+		else if(messageType == BLINK && _type == ANCHOR) {
 			byte address[8];
 			byte shortAddress[2];
 			_globalMac.decodeBlinkFrame(data, address, shortAddress);
