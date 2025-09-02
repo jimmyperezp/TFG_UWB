@@ -1,6 +1,8 @@
 /* CENTRALIZAR DATOS EN UN ANCHOR */
 
-// Este anchor será el que recopile todas las distancias medidas. 
+/*Este es el código para el/los anchor(s). Hay que configurar uno de ellos 
+como el maestro, y el resto como esclavos. 
+Esto lo hago cambiando la constante IS_MASTER de true a false según sea.*/
 
 #include <SPI.h>
 #include "DW1000Ranging.h"
@@ -20,6 +22,7 @@ const uint8_t PIN_SS = 4;   // spi select pin
 #define ANCHOR_ADD "A1:17:5B:D5:A9:9A:E2:9C" 
 uint16_t Adelay = 16580;
 #define IS_MASTER true
+//#define IS_MASTER false
 
 // Estructura para gestionar las medidas recibidas en el maestro.
 struct Medida {
@@ -110,8 +113,6 @@ void registrarMedida(uint16_t sa, float dist, float rx_pwr){
 
 void MostrarDatos(){
 
-
-
     for (int i = 0; i < numDispositivos ; i++){
 
         Serial.print(" Desde: ");
@@ -151,6 +152,7 @@ void inactiveDevice(DW1000Device *device){
 
 void loop(){
 
+    DW1000Ranging.loop();
     current_time = millis();
     if(current_time - last_print >= refresh_time){
 
@@ -158,5 +160,3 @@ void loop(){
         last_print = millis();
     }
 }
-
-
