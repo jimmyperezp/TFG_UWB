@@ -45,12 +45,12 @@ const unsigned long refresh_time = 1000; //Hago un print cada 1000 ms
 void startAsMasterAnchor(){
     //Esto es, que el anchor inicie la comunicación. 
     // En la librería, eso lo llaman: actuar como un tag: 
-    startAsTag(ANCHOR_ADD,DW1000.MODE_LONGDATA_RANGE_LOWPOWER, false);
+    DW1000Ranging.startAsTag(ANCHOR_ADD,DW1000.MODE_LONGDATA_RANGE_LOWPOWER, false);
 }
 
 void startAsSlaveAnchor(){
     //En la inicialización, no quiero que esté haciendo poll. Comienza como anchor "normal". Responderá al anchor maestro para medir la posición entre ambos.
-    startAsAnchor(ANCHOR_ADD,DW1000.MODE_LONGDATA_RANGE_LOWPOWER, false);
+    DW1000Ranging.startAsAnchor(ANCHOR_ADD,DW1000.MODE_LONGDATA_RANGE_LOWPOWER, false);
 }
 
 void setup(){
