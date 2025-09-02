@@ -61,6 +61,8 @@ Además, llevan el chip DW1000 para la comunicación UWB:
 3. Plottear la posición entre 1 tag y 2 anchors:  [Posicionamiento 2D](03%20-%20Posicionamiento%202D)
     - Este ejemplo consiste en mostrar mediante un programa de python la posición relativa entre 2 anchors y 1 tag. Utiliza el módulo WiFi de la ESP32 para enviar datos al PC. 
 
+4. Centralizar los datos en uno de los anchors [Centralizar datos](04%20-%20Centralizar%20Datos)
+    - Con los códigos de este ejemplo se envían los datos de las posiciones relativas de todos los dispositivos del sistema entre sí (tanto anchors como tags) a un anchor "maestro". Ahí se recopilan todas las distancias y potencias y se muestran por pantalla.
 <br></br>
 
 ## Configuracion Arduino 
