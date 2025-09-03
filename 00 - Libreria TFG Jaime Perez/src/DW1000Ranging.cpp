@@ -59,6 +59,9 @@ volatile boolean DW1000RangingClass::_receivedAck = false;
 // protocol error state
 boolean          DW1000RangingClass::_protocolFailed = false;
 
+// Check if last frame was long: 
+bool DW1000RangingClass::_lastFrameWasLong = false;
+
 // timestamps to remember
 int32_t            DW1000RangingClass::timer           = 0;
 int16_t            DW1000RangingClass::counterForBlink = 0; // TODO 8 bit?
@@ -469,7 +472,6 @@ void DW1000RangingClass::loop() {
     	return;
 		}
 
-		}
 		else if(messageType == BLINK && _type == ANCHOR) {
 			byte address[8];
 			byte shortAddress[2];
