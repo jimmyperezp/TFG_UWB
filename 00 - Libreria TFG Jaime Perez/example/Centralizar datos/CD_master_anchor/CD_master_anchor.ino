@@ -123,6 +123,10 @@ void ModeChangeRequest(bool toTag){
         Serial.println("Dispositivo cambiado a TAG");
         DW1000Ranging.startAsTag(DEVICE_ADDR,DW1000.MODE_LONGDATA_RANGE_LOWPOWER, false);
     }
+    else{
+        Serial.println("Dispositivo cambiado a modo ANCHOR");
+        DW1000Ranging.startAsAnchor(DEVICE_ADDR,DW1000.MODE_LONGDATA_RANGE_LOWPOWER, false);
+    }
 }
 void MostrarDatos(){
 
