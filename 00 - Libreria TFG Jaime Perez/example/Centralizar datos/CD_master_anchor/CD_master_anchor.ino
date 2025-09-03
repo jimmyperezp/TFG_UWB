@@ -142,7 +142,6 @@ void MostrarDatos(){
             Serial.print(" Dispositivos: ");
             Serial.print(addr[0],HEX);
             Serial.print(" -> ");
-            Serial.print(" Desde: ");
             Serial.print(medidas[i].shortAddr,HEX);
             Serial.print("\t Distancia: ");
             Serial.print(medidas[i].distancia);
@@ -197,9 +196,11 @@ void loop(){
     }
     else if(IS_MASTER && current_time - last_switch >= switch_time){
 
-        currentModeisInitiator = !currentModeisInitiator;
         last_switch = millis();
+        delay(100);
         DW1000Ranging.transmitModeSwitch(currentModeisInitiator);
+        delay(100);
+        currentModeisInitiator = !currentModeisInitiator;
     }
 
 }

@@ -50,7 +50,7 @@ unsigned long last_switch = 0;
 const unsigned long switch_time = 10000;
 
 //2: Current mode management: 
-static bool currentModeisInitiator = true;
+static bool currentModeisInitiator = false;
 
 //CÓDIGO:
 
@@ -122,22 +122,33 @@ void registrarMedida(uint16_t sa, float dist, float rx_pwr){
 
 void ModeChangeRequest(bool toInitiator){
 
-    if(toInitiator){
-        //DW1000.idle();
-        DW1000.reset();   // Reinicia el chip
-        Serial.println("modo TAG");
+    numDispositivos = 0;
+    for (int i = 0; i < MAX_DISPOSITIVOS; i++) {
+        medidas[i].activo = false;
+        //medidas[i].shortAddr = 0;
+        //medidas[i].distancia = 0;
+        //medidas[i].rxPower = 0;
+    }
+    if(toInitiator == true){
+        
+        DW1000.idle();
+        delay(100);
         DW1000Ranging.startAsInitiator(DEVICE_ADDR,DW1000.MODE_LONGDATA_RANGE_LOWPOWER, false);
+        delay(100);
     }
     else{
-        //DW1000.idle();
-        DW1000.reset();   // Reinicia el chip
-        Serial.println("modo ANCHOR");
+
+        DW1000.idle();
+        delay(100);
         DW1000Ranging.startAsResponder(DEVICE_ADDR,DW1000.MODE_LONGDATA_RANGE_LOWPOWER, false);
+        delay(100);
     }
 }
 
 void MostrarDatos(){
 
+    byte* addr = DW1000Ranging.getCurrentShortAddress();
+    
     Serial.println("--------- NUEVA MEDIDA ---------");
     
     for (int i = 0; i < numDispositivos ; i++){ 
@@ -197,9 +208,5 @@ void loop(){
         MostrarDatos();
         last_print = millis();
     }
-    else if(IS_MASTER && current_time - last_switch >= switch_time){
-        currentModeisInitiator = !currentModeisInitiator;
-        DW1000Ranging.transmitModeSwitch(currentModeisInitiator);
-    }
-
+    
 }
