@@ -43,7 +43,13 @@ unsigned long last_print = 0;   // Momento del último print
 unsigned long current_time = 0; // Instante actual. Lo usaré para calcular las diferencias
 const unsigned long refresh_time = 1000; //Hago un print cada 1000 ms 
 
+// Variables y constantes para hacer cambio en el rol de los anchors esclavos: 
+//1: Time management: 
+unsigned long last_switch = 0;
+const unsigned long switch_time = 10000;
 
+//2: Current mode management: 
+static bool currentModeisTag = false;
 
 //CÓDIGO:
 
