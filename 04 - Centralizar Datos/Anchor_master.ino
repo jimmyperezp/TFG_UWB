@@ -30,6 +30,7 @@ struct Medida {
     uint16_t shortAddr;   // ID del dispositivo desde el que se recibe
     float distancia;      // Última distancia medida (m)
     float rxPower;        // Última potencia recibida (dBm)
+     bool activo;        //Para saber si está activo o no, y evitar mostrarlo por pantalla.
 };
 
 //Variables y constantes para registrar las medidas recibidas
@@ -103,6 +104,7 @@ void registrarMedida(uint16_t sa, float dist, float rx_pwr){
 
         medidas[index].distancia = dist; 
         medidas[index].rxPower = rx_pwr; 
+        medidas[index].activo = true;
 
     }
     else if (numDispositivos < MAX_DISPOSITIVOS){
@@ -110,6 +112,7 @@ void registrarMedida(uint16_t sa, float dist, float rx_pwr){
         medidas[numDispositivos].shortAddr = sa;
         medidas[numDispositivos].distancia = dist;
         medidas[numDispositivos].rxPower = rx_pwr;
+        medidas[numDispositivos].activo = true;
         numDispositivos ++; //aumento en 1 la lista de dispositivos registrados.
     }
     else{
@@ -123,19 +126,27 @@ void ModeChangeRequest(bool toTag){
         Serial.println("Dispositivo cambiado a TAG");
         DW1000Ranging.startAsTag(DEVICE_ADDR,DW1000.MODE_LONGDATA_RANGE_LOWPOWER, false);
     }
+    else{
+        Serial.println("Dispositivo cambiado a ANCHOR");
+        DW1000Ranging.startAsAnchor(DEVICE_ADDR,DW1000.MODE_LONGDATA_RANGE_LOWPOWER, false);
+        
+    }
 }
 void MostrarDatos(){
 
+    byte* sa_origin = DW1000Ranging.getCurrentShortAddress();
     Serial.println("--------- NUEVA MEDIDA ---------");
     
     for (int i = 0; i < numDispositivos ; i++){ 
-        Serial.print(" Desde: ");
-        Serial.print(medidas[i].shortAddr,HEX);
-        Serial.print("\t Distancia: ");
-        Serial.print(medidas[i].distancia);
-        Serial.print(" m \t RX power: ");
-        Serial.print(medidas[i].rxPower);
-        Serial.println(" dBm");
+        if(medidas[i].activo == true){
+            Serial.print(" Desde: ");
+            Serial.print(medidas[i].shortAddr,HEX);
+            Serial.print("\t Distancia: ");
+            Serial.print(medidas[i].distancia);
+            Serial.print(" m \t RX power: ");
+            Serial.print(medidas[i].rxPower);
+            Serial.println(" dBm");
+        }
     }
     Serial.println("--------------------------------");
 }
@@ -162,8 +173,14 @@ void inactiveDevice(DW1000Device *device){
 
     //Dentro de DWdevice.h, se define el inactivity_time como 1s.
     // Si pasa ese tiempo sin señal de un dispositivo que ya había registrado antes, lo considero inactivo. 
+    uint16_t sa = device->getShortAddress();
+    int index = buscarDispositivo(sa);
+
     Serial.print("Conexión perdida con el dispositivo: ");
-    Serial.println(device->getShortAddress(), HEX);
+    Serial.println(sa, HEX);
+
+    //Al estar inactivo, pongo en false esa propiedad:
+    medidas[index].activo = false;
 }
 
 void loop(){
