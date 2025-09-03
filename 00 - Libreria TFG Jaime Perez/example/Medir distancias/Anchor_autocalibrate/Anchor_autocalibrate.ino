@@ -28,9 +28,10 @@ const uint8_t PIN_RST = 27; // reset pin
 const uint8_t PIN_IRQ = 34; // irq pin
 const uint8_t PIN_SS = 4;   // spi select pin
 
-
-char this_anchor_addr[] = "84:00:22:EA:82:60:3B:9C";
-float this_anchor_target_distance = 296*0.0254; //measured distance to anchor in m
+// Los 2 bytes de la izquierda son la short address
+// NOMENCLATURA: A para Anchors, B para Tags
+#define DEVICE_ADDR = "84:00:22:EA:82:60:3B:9C";
+float this_anchor_target_distance = 1; //measured distance to anchor in m
 
 uint16_t this_anchor_Adelay = 16600; //starting value
 uint16_t Adelay_delta = 100; //initial binary search step size
@@ -57,7 +58,7 @@ void setup()
   //DW1000Ranging.useRangeFilter(true);
 
   //start the module as anchor, don't assign random short address
-  DW1000Ranging.startAsAnchor(this_anchor_addr, DW1000.MODE_LONGDATA_RANGE_LOWPOWER, false);
+  DW1000Ranging.startAsResponder(DEVICE_ADDR, DW1000.MODE_LONGDATA_RANGE_LOWPOWER, false);
 
 }
 

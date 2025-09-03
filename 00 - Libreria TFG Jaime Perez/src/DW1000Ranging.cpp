@@ -42,7 +42,7 @@ volatile uint8_t DW1000RangingClass::_networkDevicesNumber = 0; // TODO short, 8
 int16_t      DW1000RangingClass::_lastDistantDevice    = 0; // TODO short, 8bit?
 DW1000Mac    DW1000RangingClass::_globalMac;
 
-//module type (anchor or tag)
+//module type (responder or initiator)
 int16_t      DW1000RangingClass::_type; // TODO enum??
 
 // message flow state
@@ -87,7 +87,7 @@ void (* DW1000RangingClass::_handleNewRange)(void) = 0;
 void (* DW1000RangingClass::_handleBlinkDevice)(DW1000Device*) = 0;
 void (* DW1000RangingClass::_handleNewDevice)(DW1000Device*) = 0;
 void (* DW1000RangingClass::_handleInactiveDevice)(DW1000Device*) = 0;
-void (* DW1000RangingClass::_handleModeChangeRequest)(bool toTag) = 0;
+void (* DW1000RangingClass::_handleModeChangeRequest)(bool toInitiator) = 0;
 
 /* ###########################################################################
  * #### Init and end #######################################################
@@ -124,7 +124,7 @@ void DW1000RangingClass::generalStart() {
 	// attach callback for (successfully) sent and received messages
 	DW1000.attachSentHandler(handleSent);
 	DW1000.attachReceivedHandler(handleReceived);
-	// anchor starts in receiving mode, awaiting a ranging poll message
+	// responder starts in receiving mode, awaiting a ranging poll message
 	
 	
 	if(DEBUG) {
@@ -156,14 +156,14 @@ void DW1000RangingClass::generalStart() {
 	}
 	
 	
-	// anchor starts in receiving mode, awaiting a ranging poll message
+	// responder starts in receiving mode, awaiting a ranging poll message
 	receiver();
 	// for first time ranging frequency computation
 	_rangingCountPeriod = millis();
 }
 
 
-void DW1000RangingClass::startAsAnchor(char address[], const byte mode[], const bool randomShortAddress) {
+void DW1000RangingClass::startAsResponder(char address[], const byte mode[], const bool randomShortAddress) {
 	//save the address
 	DW1000.convertToByte(address, _currentAddress);
 	//write the address on the DW1000 chip
@@ -189,14 +189,14 @@ void DW1000RangingClass::startAsAnchor(char address[], const byte mode[], const 
 	//general start:
 	generalStart();
 	
-	//defined type as anchor
-	_type = ANCHOR;
+	//defined type as responder
+	_type = RESPONDER;
 	
-	Serial.println("### ANCHOR ###");
+	Serial.println("### RESPONDER ###");
 	
 }
 
-void DW1000RangingClass::startAsTag(char address[], const byte mode[], const bool randomShortAddress) {
+void DW1000RangingClass::startAsInitiator(char address[], const byte mode[], const bool randomShortAddress) {
 	//save the address
 	DW1000.convertToByte(address, _currentAddress);
 	//write the address on the DW1000 chip
@@ -220,10 +220,10 @@ void DW1000RangingClass::startAsTag(char address[], const byte mode[], const boo
 	DW1000Ranging.configureNetwork(_currentShortAddress[0]*256+_currentShortAddress[1], 0xDECA, mode);
 	
 	generalStart();
-	//defined type as tag
-	_type = TAG;
+	//defined type as initiator
+	_type = INITIATOR;
 	
-	Serial.println("### TAG ###");
+	Serial.println("### INITIATOR ###");
 }
 
 boolean DW1000RangingClass::addNetworkDevices(DW1000Device* device, boolean shortAddress) {
@@ -269,7 +269,7 @@ boolean DW1000RangingClass::addNetworkDevices(DW1000Device* device) {
 	}
 	
 	if(addDevice) {
-		if(_type == ANCHOR) //for now let's start with 1 TAG
+		if(_type == RESPONDER) //for now let's start with 1 INITIATOR
 		{
 			_networkDevicesNumber = 0;
 		}
@@ -396,7 +396,7 @@ void DW1000RangingClass::loop() {
 			return;
 		
 		//A msg was sent. We launch the ranging protocole when a message was sent
-		if(_type == ANCHOR) {
+		if(_type == RESPONDER) {
 			if(messageType == POLL_ACK) {
 				DW1000Device* myDistantDevice = searchDistantDevice(_lastSentToShortAddress);
 				
@@ -405,7 +405,7 @@ void DW1000RangingClass::loop() {
 				}
 			}
 		}
-		else if(_type == TAG) {
+		else if(_type == INITIATOR) {
 			if(messageType == POLL) {
 				DW1000Time timePollSent;
 				DW1000.getTransmitTimestamp(timePollSent);
@@ -459,46 +459,46 @@ void DW1000RangingClass::loop() {
 		
 		int messageType = detectMessageType(data);
 		
-		//we have just received a BLINK message from tag
+		//we have just received a BLINK message from initiator
 		if(messageType == MODE_SWITCH){
 			int headerLen = _lastFrameWasLong ? LONG_MAC_LEN : SHORT_MAC_LEN;
-			bool toTag = (data[headerLen + 1] == 1);
+			bool toInitiator = (data[headerLen + 1] == 1);
 
 			if (_handleModeChangeRequest) {
 				
-				(*_handleModeChangeRequest)(toTag);
+				(*_handleModeChangeRequest)(toInitiator);
     		}
 
     	return;
 		}
 
-		else if(messageType == BLINK && _type == ANCHOR) {
+		else if(messageType == BLINK && _type == RESPONDER) {
 			byte address[8];
 			byte shortAddress[2];
 			_globalMac.decodeBlinkFrame(data, address, shortAddress);
-			//we crate a new device with th tag
-			DW1000Device myTag(address, shortAddress);
+			//we crate a new device with th initiator
+			DW1000Device myInitiator(address, shortAddress);
 			
-			if(addNetworkDevices(&myTag)) {
+			if(addNetworkDevices(&myInitiator)) {
 				if(_handleBlinkDevice != 0) {
-					(*_handleBlinkDevice)(&myTag);
+					(*_handleBlinkDevice)(&myInitiator);
 				}
 				//we reply by the transmit ranging init message
-				transmitRangingInit(&myTag);
+				transmitRangingInit(&myInitiator);
 				noteActivity();
 			}
 			_expectedMsgId = POLL;
 		}
-		else if(messageType == RANGING_INIT && _type == TAG) {
+		else if(messageType == RANGING_INIT && _type == INITIATOR) {
 			
 			byte address[2];
 			_globalMac.decodeLongMACFrame(data, address);
-			//we crate a new device with the anchor
-			DW1000Device myAnchor(address, true);
+			//we crate a new device with the responder
+			DW1000Device myResponder(address, true);
 			
-			if(addNetworkDevices(&myAnchor, true)) {
+			if(addNetworkDevices(&myResponder, true)) {
 				if(_handleNewDevice != 0) {
-					(*_handleNewDevice)(&myAnchor);
+					(*_handleNewDevice)(&myResponder);
 				}
 			}
 			
@@ -531,7 +531,7 @@ void DW1000RangingClass::loop() {
 			
 			
 			//then we proceed to range protocole
-			if(_type == ANCHOR) {
+			if(_type == RESPONDER) {
 				if(messageType != _expectedMsgId) {
 					// unexpected message, start over again (except if already POLL)
 					_protocolFailed = true;
@@ -619,7 +619,7 @@ void DW1000RangingClass::loop() {
 								myDistantDevice->setFPPower(DW1000.getFirstPathPower());
 								myDistantDevice->setQuality(DW1000.getReceiveQuality());
 								
-								//we send the range to TAG
+								//we send the range to INITIATOR
 								transmitRangeReport(myDistantDevice);
 								
 								//we have finished our range computation. We send the corresponding handler
@@ -642,7 +642,7 @@ void DW1000RangingClass::loop() {
 					
 				}
 			}
-			else if(_type == TAG) {
+			else if(_type == INITIATOR) {
 				// get message and parse
 				if(messageType != _expectedMsgId) {
 					// unexpected message, start over again
@@ -696,27 +696,7 @@ void DW1000RangingClass::loop() {
 				}
 			}
 		}
-		
 	}
-
-	/*
-	//Lanzar el cambio del anchor_slave cada 10 segundos.
-    static unsigned long lastModeSwitch = 0;
-    const unsigned long modeSwitchInterval = 10000; // 10 segundos
-    static bool currentModeIsTag = false;
-
-    unsigned long now = millis();
-    if (_type == ANCHOR && (now - lastModeSwitch >= modeSwitchInterval)) {
-        lastModeSwitch = now;
-        currentModeIsTag = !currentModeIsTag;
-
-        // 1. Ejecutar el callback si está registrado
-        if (_handleModeChangeRequest) {
-            _handleModeChangeRequest(currentModeIsTag); // true = TAG, false = ANCHOR
-        }
-		
-    }
-		*/
 }
 
 void DW1000RangingClass::useRangeFilter(boolean enabled) {
@@ -755,7 +735,7 @@ void DW1000RangingClass::noteActivity() {
 
 void DW1000RangingClass::resetInactive() {
 	//if inactive
-	if(_type == ANCHOR) {
+	if(_type == RESPONDER) {
 		_expectedMsgId = POLL;
 		receiver();
 	}
@@ -764,17 +744,17 @@ void DW1000RangingClass::resetInactive() {
 
 void DW1000RangingClass::timerTick() {
 	if(_networkDevicesNumber > 0 && counterForBlink != 0) {
-		if(_type == TAG) {
+		if(_type == INITIATOR) {
 			_expectedMsgId = POLL_ACK;
 			//send a prodcast poll
 			transmitPoll(nullptr);
 		}
 	}
 	else if(counterForBlink == 0) {
-		if(_type == TAG) {
+		if(_type == INITIATOR) {
 			transmitBlink();
 		}
-		//check for inactive devices if we are a TAG or ANCHOR
+		//check for inactive devices if we are a INITIATOR or RESPONDER
 		checkForInactiveDevices();
 	}
 	counterForBlink++;
@@ -880,14 +860,14 @@ void DW1000RangingClass::transmitPollAck(DW1000Device* myDistantDevice) {
 	transmitInit();
 	_globalMac.generateShortMACFrame(data, _currentShortAddress, myDistantDevice->getByteShortAddress());
 	data[SHORT_MAC_LEN] = POLL_ACK;
-	// delay the same amount as ranging tag
+	// delay the same amount as ranging initiator
 	DW1000Time deltaTime = DW1000Time(_replyDelayTimeUS, DW1000Time::MICROSECONDS);
 	copyShortAddress(_lastSentToShortAddress, myDistantDevice->getByteShortAddress());
 	transmit(data, deltaTime);
 }
 
 void DW1000RangingClass::transmitRange(DW1000Device* myDistantDevice) {
-	//transmit range need to accept broadcast for multiple anchor
+	//transmit range need to accept broadcast for multiple responder
 	transmitInit();
 	
 	
@@ -962,7 +942,7 @@ void DW1000RangingClass::transmitRangeFailed(DW1000Device* myDistantDevice) {
 	transmit(data);
 }
 
-void DW1000RangingClass::transmitModeSwitch(bool toTag, DW1000Device* device){
+void DW1000RangingClass::transmitModeSwitch(bool toInitiator, DW1000Device* device){
 
 	//1: Prepare for new transmission:
 	transmitInit(); 
@@ -991,11 +971,11 @@ void DW1000RangingClass::transmitModeSwitch(bool toTag, DW1000Device* device){
 
 	//4: Insert the payload (message to send)
 	/* Byte #0 = MODE_SWITCH code
-	   Byte #1 -> 0 = switch to anchor. 1 = to tag.
+	   Byte #1 -> 0 = switch to responder. 1 = to initiator.
 	*/
 
 	data[SHORT_MAC_LEN] = MODE_SWITCH;
-	data[SHORT_MAC_LEN+1] = toTag ? 1:0;
+	data[SHORT_MAC_LEN+1] = toInitiator ? 1:0;
 
 	transmit(data); //the data is sent via UWB
 }

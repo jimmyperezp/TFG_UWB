@@ -3,7 +3,7 @@
 /*Este es el código para el/los anchor(s).  Hay que configurar uno de ellos 
 como el maestro, y el resto como esclavos. 
 Esto lo hago cambiando la constante IS_MASTER de true a false según sea.
-Además, debo variar también el ANCHOR_ADD del resto para que no coincidan*/
+Además, debo variar también el DEVICE_ADDR del resto para que no coincidan*/
 
 #include <SPI.h>
 #include "DW1000Ranging.h"
@@ -20,6 +20,7 @@ const uint8_t PIN_IRQ = 34; // irq pin
 const uint8_t PIN_SS = 4;   // spi select pin
 
 // Definiciones propias del Anchor:
+// NOMENCLATURA: A para Anchors, B para Tags
 #define DEVICE_ADDR "A2:00:5B:D5:A9:9A:E2:9C" 
 uint16_t Adelay = 16580;
 #define IS_MASTER false
@@ -49,20 +50,9 @@ unsigned long last_switch = 0;
 const unsigned long switch_time = 10000;
 
 //2: Current mode management: 
-static bool currentModeisTag = true;
+static bool currentModeisInitiator = true;
 
 //CÓDIGO:
-
-void startAsMasterAnchor(){
-    //Esto es, que el anchor inicie la comunicación. 
-    // En la librería, eso lo llaman: actuar como un tag: 
-    DW1000Ranging.startAsTag(DEVICE_ADDR,DW1000.MODE_LONGDATA_RANGE_LOWPOWER, false);
-}
-
-void startAsSlaveAnchor(){
-    //En la inicialización, no quiero que esté haciendo poll. Comienza como anchor "normal". Responderá al anchor maestro para medir la posición entre ambos.
-    DW1000Ranging.startAsAnchor(DEVICE_ADDR,DW1000.MODE_LONGDATA_RANGE_LOWPOWER, false);
-}
 
 void setup(){
 
@@ -81,12 +71,16 @@ void setup(){
 
     
     if (IS_MASTER){
-        startAsMasterAnchor();
+
+        //Esto es, que el anchor inicie la comunicación. 
+        // En la librería, eso lo llaman: actuar como un iniciador:
+        DW1000Ranging.startAsInitiator(DEVICE_ADDR,DW1000.MODE_LONGDATA_RANGE_LOWPOWER, false);
     }
     else{
         
         DW1000Ranging.attachModeChangeRequest(ModeChangeRequest);
-        startAsSlaveAnchor();  
+        //En la inicialización, no quiero que esté haciendo poll. Comienza como anchor "normal". Responderá al anchor maestro para medir la posición entre ambos.
+        DW1000Ranging.startAsResponder(DEVICE_ADDR,DW1000.MODE_LONGDATA_RANGE_LOWPOWER, false);
     } 
 }
 
@@ -126,17 +120,19 @@ void registrarMedida(uint16_t sa, float dist, float rx_pwr){
     }
 }
 
-void ModeChangeRequest(bool toTag){
+void ModeChangeRequest(bool toInitiator){
 
-    if(toTag){
+    if(toInitiator){
+        //DW1000.idle();
         DW1000.reset();   // Reinicia el chip
         Serial.println("modo TAG");
-        DW1000Ranging.startAsTag(DEVICE_ADDR,DW1000.MODE_LONGDATA_RANGE_LOWPOWER, false);
+        DW1000Ranging.startAsInitiator(DEVICE_ADDR,DW1000.MODE_LONGDATA_RANGE_LOWPOWER, false);
     }
     else{
+        //DW1000.idle();
         DW1000.reset();   // Reinicia el chip
         Serial.println("modo ANCHOR");
-        DW1000Ranging.startAsAnchor(DEVICE_ADDR,DW1000.MODE_LONGDATA_RANGE_LOWPOWER, false);
+        DW1000Ranging.startAsResponder(DEVICE_ADDR,DW1000.MODE_LONGDATA_RANGE_LOWPOWER, false);
     }
 }
 
@@ -202,8 +198,8 @@ void loop(){
         last_print = millis();
     }
     else if(IS_MASTER && current_time - last_switch >= switch_time){
-        currentModeisTag = !currentModeisTag;
-        DW1000Ranging.transmitModeSwitch(currentModeisTag);
+        currentModeisInitiator = !currentModeisInitiator;
+        DW1000Ranging.transmitModeSwitch(currentModeisInitiator);
     }
 
 }

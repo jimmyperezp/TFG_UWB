@@ -59,9 +59,9 @@
 //in us
 #define DEFAULT_REPLY_DELAY_TIME 7000
 
-//sketch type (anchor or tag)
-#define TAG 0
-#define ANCHOR 1
+//sketch type (responder or Initiator)
+#define INITIATOR 0
+#define RESPONDER 1
 
 //default timer delay
 #define DEFAULT_TIMER_DELAY 80
@@ -82,8 +82,8 @@ public:
 	static void    initCommunication(uint8_t myRST = DEFAULT_RST_PIN, uint8_t mySS = DEFAULT_SPI_SS_PIN, uint8_t myIRQ = 2);
 	static void    configureNetwork(uint16_t deviceAddress, uint16_t networkId, const byte mode[]);
 	static void    generalStart();
-	static void    startAsAnchor(char address[], const byte mode[], const bool randomShortAddress = true);
-	static void    startAsTag(char address[], const byte mode[], const bool randomShortAddress = true);
+	static void    startAsResponder(char address[], const byte mode[], const bool randomShortAddress = true);
+	static void    startAsInitiator(char address[], const byte mode[], const bool randomShortAddress = true);
 	static boolean addNetworkDevices(DW1000Device* device, boolean shortAddress);
 	static boolean addNetworkDevices(DW1000Device* device);
 	static void    removeNetworkDevices(int16_t index);
@@ -115,7 +115,7 @@ public:
 	
 	static void attachInactiveDevice(void (* handleInactiveDevice)(DW1000Device*)) { _handleInactiveDevice = handleInactiveDevice; };
 	
-	static void attachModeChangeRequest(void (* handleModeChange)(bool toTag)){
+	static void attachModeChangeRequest(void (* handleModeChange)(bool toInitiator)){
 		_handleModeChangeRequest = handleModeChange;
 	}
 	
@@ -127,7 +127,7 @@ public:
 	static void visualizeDatas(byte datas[]);
 
 	//To request a switch in mode operation. 
-	void transmitModeSwitch(bool toTag, DW1000Device* device = nullptr);
+	void transmitModeSwitch(bool toInitiator, DW1000Device* device = nullptr);
 
 private:
 	//other devices in the network
@@ -147,11 +147,11 @@ private:
 	static void (* _handleNewDevice)(DW1000Device*);
 	static void (* _handleInactiveDevice)(DW1000Device*);
 
-	static void (* _handleModeChangeRequest)(bool toTag);
+	static void (* _handleModeChangeRequest)(bool toInitiator);
 
 	
-	//sketch type (tag or anchor)
-	static int16_t          _type; //0 for tag and 1 for anchor
+	//sketch type (Initiator or responder)
+	static int16_t          _type; //0 for Initiator and 1 for responder
 	// TODO check type, maybe enum?
 	// message flow state
 	static volatile byte    _expectedMsgId;
@@ -195,7 +195,7 @@ private:
 	static void checkForInactiveDevices();
 	static void copyShortAddress(byte address1[], byte address2[]);
 	
-	//for ranging protocole (ANCHOR)
+	//for ranging protocole (responder)
 	static void transmitInit();
 	static void transmit(byte datas[]);
 	static void transmit(byte datas[], DW1000Time time);
@@ -206,7 +206,7 @@ private:
 	static void transmitRangeFailed(DW1000Device* myDistantDevice);
 	static void receiver();
 	
-	//for ranging protocole (TAG)
+	//for ranging protocole (Initiator)
 	static void transmitPoll(DW1000Device* myDistantDevice);
 	static void transmitRange(DW1000Device* myDistantDevice);
 	

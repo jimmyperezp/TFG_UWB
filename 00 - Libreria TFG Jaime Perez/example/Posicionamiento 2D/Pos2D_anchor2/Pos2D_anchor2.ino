@@ -7,7 +7,7 @@
 
 // Los 2 bytes de la izquierda son la short address.
 // NOMENCLATURA: A para Anchors, B para Tags
-#define ANCHOR_ADD "A2:17:5B:D5:A9:9A:E2:9C" // esta es el anchor1. Para el anchor2, sustituir el "82" por "83"
+#define DEVIDE_ADDR "A2:17:5B:D5:A9:9A:E2:9C" // esta es el anchor1. Para el anchor2, sustituir el "82" por "83"
 
 // Antenna Delay: Sustituir con el valor obtenido en la calibracion
 uint16_t Adelay = 16580;
@@ -49,12 +49,12 @@ void setup(){
   // dirección - modo de funcionamiento - ¿Tomar dirección aleatoria? 
   // La dirección aleatoria sirve para pruebas "rapidas". Así evito tener que estar cambiando todas las direcciones.
   
-  DW1000Ranging.startAsAnchor(ANCHOR_ADD, DW1000.MODE_LONGDATA_RANGE_LOWPOWER, false);
-  // DW1000Ranging.startAsAnchor(ANCHOR_ADD, DW1000.MODE_SHORTDATA_FAST_LOWPOWER);
-  // DW1000Ranging.startAsAnchor(ANCHOR_ADD, DW1000.MODE_LONGDATA_FAST_LOWPOWER);
-  // DW1000Ranging.startAsAnchor(ANCHOR_ADD, DW1000.MODE_SHORTDATA_FAST_ACCURACY);
-  // DW1000Ranging.startAsAnchor(ANCHOR_ADD, DW1000.MODE_LONGDATA_FAST_ACCURACY);
-  // DW1000Ranging.startAsAnchor(ANCHOR_ADD, DW1000.MODE_LONGDATA_RANGE_ACCURACY);
+  DW1000Ranging.startAsResponder(DEVICE_ADDR, DW1000.MODE_LONGDATA_RANGE_LOWPOWER, false);
+  // DW1000Ranging.startAsResponder(DEVICE_ADDR, DW1000.MODE_SHORTDATA_FAST_LOWPOWER);
+  // DW1000Ranging.startAsResponder(DEVICE_ADDR, DW1000.MODE_LONGDATA_FAST_LOWPOWER);
+  // DW1000Ranging.startAsResponder(DEVICE_ADDR, DW1000.MODE_SHORTDATA_FAST_ACCURACY);
+  // DW1000Ranging.startAsResponder(DEVICE_ADDR, DW1000.MODE_LONGDATA_FAST_ACCURACY);
+  // DW1000Ranging.startAsResponder(DEVICE_ADDR, DW1000.MODE_LONGDATA_RANGE_ACCURACY);
 }
 
 void loop()
