@@ -121,13 +121,19 @@ void registrarMedida(uint16_t sa, float dist, float rx_pwr){
 
 void ModeChangeRequest(bool toInitiator){
 
-    if(toInitiator){
-        Serial.println("Dispositivo cambiado a INICIADOR");
+    if(toInitiator == true){
+
+        DW1000.idle();
+        delay(100);
         DW1000Ranging.startAsInitiator(DEVICE_ADDR,DW1000.MODE_LONGDATA_RANGE_LOWPOWER, false);
+        delay(100);
     }
     else{
-        Serial.println("Dispositivo cambiado a modo RESPONDER");
+
+        DW1000.idle();
+        delay(100);
         DW1000Ranging.startAsResponder(DEVICE_ADDR,DW1000.MODE_LONGDATA_RANGE_LOWPOWER, false);
+        delay(100);
     }
 } 
 
@@ -166,15 +172,12 @@ void newRange(){
 
 void newDevice(DW1000Device *device){
 
-    // La librería DW1000 lanza este callback cuando detecta una comunicación desde un device con shortAdress distinta a las que ha visto hasta entonces.
     Serial.print("Nuevo dispositivo: ");
     Serial.println(device->getShortAddress(), HEX);
 }
 
 void inactiveDevice(DW1000Device *device){
 
-    //Dentro de DWdevice.h, se define el inactivity_time como 1s.
-    // Si pasa ese tiempo sin señal de un dispositivo que ya había registrado antes, lo considero inactivo. 
     uint16_t sa = device->getShortAddress();
     int index = buscarDispositivo(sa);
 
@@ -199,6 +202,8 @@ void loop(){
         last_switch = millis();
         delay(100);
         DW1000Ranging.transmitModeSwitch(currentModeisInitiator);
+        // Solo le paso 1 parámetro -> el modo que quiero: true = pasar a iniciador
+        // El segundo parámetro es null -> Hace broadcast: se lo pide a todos los slave_anchors
         delay(100);
         currentModeisInitiator = !currentModeisInitiator;
     }

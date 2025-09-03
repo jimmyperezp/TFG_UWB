@@ -49,20 +49,9 @@ unsigned long last_switch = 0;
 const unsigned long switch_time = 10000;
 
 //2: Current mode management: 
-static bool currentModeisTag = false;
+static bool currentModeisInitiator = false;
 
 //CÓDIGO:
-
-void startAsMasterAnchor(){
-    //Esto es, que el anchor inicie la comunicación. 
-    // En la librería, eso lo llaman: actuar como un tag: 
-    DW1000Ranging.startAsTag(DEVICE_ADDR,DW1000.MODE_LONGDATA_RANGE_LOWPOWER, false);
-}
-
-void startAsSlaveAnchor(){
-    //En la inicialización, no quiero que esté haciendo poll. Comienza como anchor "normal". Responderá al anchor maestro para medir la posición entre ambos.
-    DW1000Ranging.startAsAnchor(DEVICE_ADDR,DW1000.MODE_LONGDATA_RANGE_LOWPOWER, false);
-}
 
 void setup(){
 
@@ -81,12 +70,15 @@ void setup(){
 
     
     if (IS_MASTER){
-        startAsMasterAnchor();
+        //Esto es, que el anchor inicie la comunicación. 
+        // En la librería, eso lo llaman: actuar como un iniciador: 
+        DW1000Ranging.startAsInitiator(DEVICE_ADDR,DW1000.MODE_LONGDATA_RANGE_LOWPOWER, false);
     }
     else{
         
         DW1000Ranging.attachModeChangeRequest(ModeChangeRequest);
-        startAsSlaveAnchor();  
+        //En la inicialización, no quiero que esté haciendo poll. Comienza como anchor "normal". Responderá al anchor maestro para medir la posición entre ambos.
+        DW1000Ranging.startAsResponder(DEVICE_ADDR,DW1000.MODE_LONGDATA_RANGE_LOWPOWER, false);  
     } 
 }
 
@@ -128,13 +120,19 @@ void registrarMedida(uint16_t sa, float dist, float rx_pwr){
 
 void ModeChangeRequest(bool toTag){
 
-    if(toTag){
-        Serial.println("Dispositivo cambiado a TAG");
-        DW1000Ranging.startAsTag(DEVICE_ADDR,DW1000.MODE_LONGDATA_RANGE_LOWPOWER, false);
+    if(oInitiator == true){
+
+        DW1000.idle();
+        delay(100);
+        DW1000Ranging.startAsInitiator(DEVICE_ADDR,DW1000.MODE_LONGDATA_RANGE_LOWPOWER, false);
+        delay(100);
     }
     else{
-        Serial.println("Dispositivo cambiado a ANCHOR");
-        DW1000Ranging.startAsAnchor(DEVICE_ADDR,DW1000.MODE_LONGDATA_RANGE_LOWPOWER, false);
+
+        DW1000.idle();
+        delay(100);
+        DW1000Ranging.startAsResponder(DEVICE_ADDR,DW1000.MODE_LONGDATA_RANGE_LOWPOWER, false);
+        delay(100);
         
     }
 }
@@ -145,7 +143,10 @@ void MostrarDatos(){
     
     for (int i = 0; i < numDispositivos ; i++){ 
         if(medidas[i].activo == true){
-            Serial.print(" Desde: ");
+            
+            Serial.print(" Dispositivos: ");
+            Serial.print(addr[0],HEX);
+            Serial.print(" -> ");
             Serial.print(medidas[i].shortAddr,HEX);
             Serial.print("\t Distancia: ");
             Serial.print(medidas[i].distancia);
@@ -170,15 +171,12 @@ void newRange(){
 
 void newDevice(DW1000Device *device){
 
-    // La librería DW1000 lanza este callback cuando detecta una comunicación desde un device con shortAdress distinta a las que ha visto hasta entonces.
     Serial.print("Nuevo dispositivo: ");
     Serial.println(device->getShortAddress(), HEX);
 }
 
 void inactiveDevice(DW1000Device *device){
 
-    //Dentro de DWdevice.h, se define el inactivity_time como 1s.
-    // Si pasa ese tiempo sin señal de un dispositivo que ya había registrado antes, lo considero inactivo. 
     uint16_t sa = device->getShortAddress();
     int index = buscarDispositivo(sa);
 
@@ -197,5 +195,15 @@ void loop(){
 
         MostrarDatos();
         last_print = millis();
+    }
+    else if(IS_MASTER && current_time - last_switch >= switch_time){
+
+        last_switch = millis();
+        delay(100);
+        DW1000Ranging.transmitModeSwitch(currentModeisInitiator);
+        // Solo le paso 1 parámetro -> el modo que quiero: true = pasar a iniciador
+        // El segundo parámetro es null -> Hace broadcast: se lo pide a todos los slave_anchors
+        delay(100);
+        currentModeisInitiator = !currentModeisInitiator;
     }
 }
