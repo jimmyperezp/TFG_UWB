@@ -140,14 +140,19 @@ void ModeChangeRequest(bool toTag){
 
 void MostrarDatos(){
 
+    byte* addr = DW1000Ranging.getCurrentShortAddress();
+
     Serial.println("--------- NUEVA MEDIDA ---------");
     
     for (int i = 0; i < numDispositivos ; i++){ 
         if(medidas[i].activo == true){
+            Serial.print(" Dispositivos: ");
+            Serial.print(addr[0],HEX);
+            Serial.print(" -> ");
             Serial.print(" Desde: ");
-            Serial.print(medidas[i].    shortAddr,HEX);
+            Serial.print(medidas[i].shortAddr,HEX);
             Serial.print("\t Distancia: ");
-            Serial.print(medidas[i].    distancia);
+            Serial.print(medidas[i].distancia);
             Serial.print(" m \t RX power: ");
             Serial.print(medidas[i].rxPower);
             Serial.println(" dBm");
