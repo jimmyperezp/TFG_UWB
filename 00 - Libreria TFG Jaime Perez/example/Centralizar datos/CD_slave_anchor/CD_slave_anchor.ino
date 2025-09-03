@@ -49,7 +49,7 @@ unsigned long last_switch = 0;
 const unsigned long switch_time = 10000;
 
 //2: Current mode management: 
-static bool currentModeisTag = false;
+static bool currentModeisTag = true;
 
 //CÓDIGO:
 
@@ -129,11 +129,13 @@ void registrarMedida(uint16_t sa, float dist, float rx_pwr){
 void ModeChangeRequest(bool toTag){
 
     if(toTag){
-        Serial.println("Dispositivo cambiado a TAG");
+        DW1000.reset();   // Reinicia el chip
+        Serial.println("modo TAG");
         DW1000Ranging.startAsTag(DEVICE_ADDR,DW1000.MODE_LONGDATA_RANGE_LOWPOWER, false);
     }
     else{
-        Serial.println("Dispositivo cambiado a modo ANCHOR");
+        DW1000.reset();   // Reinicia el chip
+        Serial.println("modo ANCHOR");
         DW1000Ranging.startAsAnchor(DEVICE_ADDR,DW1000.MODE_LONGDATA_RANGE_LOWPOWER, false);
     }
 }
@@ -144,10 +146,12 @@ void MostrarDatos(){
     
     for (int i = 0; i < numDispositivos ; i++){ 
         if(medidas[i].activo == true){
-            Serial.print(" Desde: ");
-            Serial.print(medidas[i].    shortAddr,HEX);
+            Serial.print(" Dispositivos: ");
+            Serial.print(addr[0],HEX);
+            Serial.print(" -> ");
+            Serial.print(medidas[i].shortAddr,HEX);
             Serial.print("\t Distancia: ");
-            Serial.print(medidas[i].    distancia);
+            Serial.print(medidas[i].distancia);
             Serial.print(" m \t RX power: ");
             Serial.print(medidas[i].rxPower);
             Serial.println(" dBm");
@@ -197,7 +201,7 @@ void loop(){
         MostrarDatos();
         last_print = millis();
     }
-    else if(current_time - last_switch >= switch_time){
+    else if(IS_MASTER && current_time - last_switch >= switch_time){
         currentModeisTag = !currentModeisTag;
         DW1000Ranging.transmitModeSwitch(currentModeisTag);
     }

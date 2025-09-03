@@ -136,7 +136,7 @@ void ModeChangeRequest(bool toTag){
         Serial.println("Dispositivo cambiado a modo ANCHOR");
         DW1000Ranging.startAsAnchor(DEVICE_ADDR,DW1000.MODE_LONGDATA_RANGE_LOWPOWER, false);
     }
-}
+} 
 
 void MostrarDatos(){
 
@@ -197,13 +197,15 @@ void loop(){
 
     DW1000Ranging.loop();
     current_time = millis();
-    if(current_time - last_print >= refresh_time){
 
+    if(current_time - last_print >= refresh_time){
         MostrarDatos();
         last_print = millis();
     }
-    else if(current_time - last_switch >= switch_time){
+    else if(IS_MASTER && current_time - last_switch >= switch_time){
+
         currentModeisTag = !currentModeisTag;
+        last_switch = millis();
         DW1000Ranging.transmitModeSwitch(currentModeisTag);
     }
 
