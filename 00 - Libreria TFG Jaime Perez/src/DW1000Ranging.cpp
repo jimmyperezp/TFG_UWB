@@ -699,6 +699,7 @@ void DW1000RangingClass::loop() {
 		
 	}
 
+	/*
 	//Lanzar el cambio del anchor_slave cada 10 segundos.
     static unsigned long lastModeSwitch = 0;
     const unsigned long modeSwitchInterval = 10000; // 10 segundos
@@ -715,6 +716,7 @@ void DW1000RangingClass::loop() {
         }
 		
     }
+		*/
 }
 
 void DW1000RangingClass::useRangeFilter(boolean enabled) {
