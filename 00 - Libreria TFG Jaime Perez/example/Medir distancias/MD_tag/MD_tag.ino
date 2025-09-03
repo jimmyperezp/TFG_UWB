@@ -19,7 +19,7 @@ const uint8_t PIN_SS = 4;   // spi select pin
 
 // Los 2 bytes de la izquierda son la short address.
 // NOMENCLATURA: A para Anchors, B para Tags
-#define DEVICE_ADDR  = "B1:00:22:EA:82:60:3B:9C";
+#define DEVICE_ADDR "B1:00:22:EA:82:60:3B:9C"
 
 void setup()
 {

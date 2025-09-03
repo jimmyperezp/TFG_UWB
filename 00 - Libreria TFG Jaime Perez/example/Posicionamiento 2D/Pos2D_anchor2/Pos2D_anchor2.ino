@@ -7,7 +7,7 @@
 
 // Los 2 bytes de la izquierda son la short address.
 // NOMENCLATURA: A para Anchors, B para Tags
-#define DEVIDE_ADDR "A2:17:5B:D5:A9:9A:E2:9C" // esta es el anchor1. Para el anchor2, sustituir el "82" por "83"
+#define DEVICE_ADDR "A2:17:5B:D5:A9:9A:E2:9C" // esta es el anchor1. Para el anchor2, sustituir el "82" por "83"
 
 // Antenna Delay: Sustituir con el valor obtenido en la calibracion
 uint16_t Adelay = 16580;

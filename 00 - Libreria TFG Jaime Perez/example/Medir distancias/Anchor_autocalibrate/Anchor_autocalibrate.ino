@@ -30,7 +30,7 @@ const uint8_t PIN_SS = 4;   // spi select pin
 
 // Los 2 bytes de la izquierda son la short address
 // NOMENCLATURA: A para Anchors, B para Tags
-#define DEVICE_ADDR = "84:00:22:EA:82:60:3B:9C";
+#define DEVICE_ADDR "84:00:22:EA:82:60:3B:9C"
 float this_anchor_target_distance = 1; //measured distance to anchor in m
 
 uint16_t this_anchor_Adelay = 16600; //starting value
