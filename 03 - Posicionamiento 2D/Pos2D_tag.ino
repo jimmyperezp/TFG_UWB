@@ -20,6 +20,8 @@ Una vez subidos los códigos de los anchors y el tag, ejecutar el display (archi
 #define PIN_RST 27
 #define PIN_IRQ 34
 
+#define DEVICE_ADDR "B1:00:22:EA:82:60:3B:9C"
+
 const char *ssid = "ssid"; 
 const char *password = "password";  
 const char *host = "IPv4";  // CMD --> ipconfig --> leer IPv4
@@ -65,7 +67,7 @@ void setup()
     DW1000Ranging.attachInactiveDevice(inactiveDevice);
 
     //we start the module as a tag
-    DW1000Ranging.startAsTag("B1:00:22:EA:82:60:3B:9C", DW1000.MODE_LONGDATA_RANGE_LOWPOWER,false);
+    DW1000Ranging.startAsInitiator(DEVICE_ADDR, DW1000.MODE_LONGDATA_RANGE_LOWPOWER,false);
 
     uwb_data = init_link();
 }

@@ -19,7 +19,7 @@ const uint8_t PIN_SS = 4;   // spi select pin
 
 // Los 2 bytes de la izquierda son la short address.
 // NOMENCLATURA: A para Anchors, B para Tags
-char tag_addr[] = "B1:00:22:EA:82:60:3B:9C";
+#define DEVICE_ADDR "B1:00:22:EA:82:60:3B:9C"
 
 void setup()
 {
@@ -36,7 +36,7 @@ void setup()
 
 // start as tag, do not assign random short address
 
-  DW1000Ranging.startAsTag(tag_addr, DW1000.MODE_LONGDATA_RANGE_LOWPOWER, false);
+  DW1000Ranging.startAsInitiator(DEVICE_ADDR, DW1000.MODE_LONGDATA_RANGE_LOWPOWER, false);
 }
 
 void loop()
