@@ -88,6 +88,7 @@ void (* DW1000RangingClass::_handleBlinkDevice)(DW1000Device*) = 0;
 void (* DW1000RangingClass::_handleNewDevice)(DW1000Device*) = 0;
 void (* DW1000RangingClass::_handleInactiveDevice)(DW1000Device*) = 0;
 void (* DW1000RangingClass::_handleModeChangeRequest)(bool toInitiator) = 0;
+void (* DW1000RangingClass::_handleDataRequested)(const byte*) = 0;
 
 /* ###########################################################################
  * #### Init and end #######################################################
@@ -451,6 +452,7 @@ void DW1000RangingClass::loop() {
 	
 	//check for new received message
 	if(_receivedAck) {
+
 		_receivedAck = false;
 		
 		//we read the datas from the modules:
@@ -467,12 +469,28 @@ void DW1000RangingClass::loop() {
 			if (_handleModeChangeRequest) {
 				
 				(*_handleModeChangeRequest)(toInitiator);
-    		}
+			}
 
-    	return;
+			return;
+
+		}
+		else if(messageType == REQUEST_DATA){
+
+			//byte address[8]; -> In case I ever need the long address
+			byte shortAddress[2];
+			_globalMac.decodeBlinkFrame(data, nullptr, shortAddress);
+			//_globalMac.decodeBlinkFrame(data, address, shortAddress);
+
+			
+
+			if(_handleDataRequested){
+				(* _handleDataRequested)(shortAddress);
+			}
+			return;
+
 		}
 
-		else if(messageType == BLINK && _type == RESPONDER) {
+		if(messageType == BLINK && _type == RESPONDER) {
 			byte address[8];
 			byte shortAddress[2];
 			_globalMac.decodeBlinkFrame(data, address, shortAddress);
@@ -769,7 +787,7 @@ void DW1000RangingClass::copyShortAddress(byte address1[], byte address2[]) {
 	*(address1+1) = *(address2+1);
 }
 
-/* ###########################################################################
+/*  ###########################################################################
  * #### Methods for ranging protocole   ######################################
  * ######################################################################### */
 
@@ -942,6 +960,20 @@ void DW1000RangingClass::transmitRangeFailed(DW1000Device* myDistantDevice) {
 	transmit(data);
 }
 
+void DW1000RangingClass::receiver() {
+	DW1000.newReceive();
+	DW1000.setDefaults();
+	// so we don't need to restart the receiver manually
+	DW1000.receivePermanently(true);
+	DW1000.startReceive();
+}
+
+/*
+* -------------------------------------------------
+* Methods: Mode Switch, Data Request & Data Report
+* -------------------------------------------------
+*/
+
 void DW1000RangingClass::transmitModeSwitch(bool toInitiator, DW1000Device* device){
 
 	//1: Prepare for new transmission:
@@ -981,13 +1013,32 @@ void DW1000RangingClass::transmitModeSwitch(bool toInitiator, DW1000Device* devi
 }
 
 
-void DW1000RangingClass::receiver() {
-	DW1000.newReceive();
-	DW1000.setDefaults();
-	// so we don't need to restart the receiver manually
-	DW1000.receivePermanently(true);
-	DW1000.startReceive();
+void DW1000RangingClass::transmitRequestData(DW1000Device* device){
+
+	//This method works just as the "transmitModeSwitch". See explanations and commentaries there.
+	transmitInit(); 
+
+	byte dest[2]; 
+	
+	if (device == nullptr){
+		
+		dest[0] = 0xFF;
+		dest[1] = 0xFF;
+		
+	}
+	else{
+		memcpy(dest,device->getByteShortAddress(),2);
+	}
+
+
+	_globalMac.generateShortMACFrame(data, _currentShortAddress, dest);
+	data[SHORT_MAC_LEN] = REQUEST_DATA;
+	
+
+	transmit(data); //the data is sent via UWB
+
 }
+
 
 
 /* ###########################################################################
