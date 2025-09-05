@@ -13,7 +13,7 @@ Además, debo variar también el ANCHOR_ADD del resto para que no coincidan*/
 #define DEBUG 1
 
 
-//Definiciones de Pines de la placa usada:
+//Board's pins definitions:
 #define SPI_SCK 18
 #define SPI_MISO 19
 #define SPI_MOSI 23
@@ -23,14 +23,15 @@ const uint8_t PIN_RST = 27; // reset pin
 const uint8_t PIN_IRQ = 34; // irq pin
 const uint8_t PIN_SS = 4;   // spi select pin
 
-// Definiciones propias del Anchor:
+// Devices' own definitions:
+// Nomenclature: A for Anchors, B for Tags
 #define DEVICE_ADDR "A1:00:5B:D5:A9:9A:E2:9C" 
 uint16_t own_short_addr = DW1000Ranging.getCurrentShortAddress();
 uint16_t Adelay = 16580;
 #define IS_MASTER true
 //#define IS_MASTER false
 
-// Estructura para gestionar las medidas recibidas en el maestro.
+// Struct to handle the known measurements among the system's devices:
 struct Medida {
     uint16_t shortAddr_origin;
     uint16_t shortAddr_destiny;   
@@ -44,11 +45,11 @@ struct Medida {
 Medida medidas[MAX_DISPOSITIVOS];
 int numDispositivos = 0;
 
-//Variables y constantes para mostrar los resultados por el monitor serie:
-unsigned long last_print = 0;   // Momento del último print
-unsigned long current_time = 0; // Instante actual. Lo usaré para calcular las diferencias
+// Variables & constants to register the incoming ranges
+unsigned long last_print = 0;  
+unsigned long current_time = 0; 
 const unsigned long refresh_time = 40000; //Hago un print de los datos centralizados cada 40s
-const unsigned long refresh_time_debug = 1000; //Hago un print cada 1000 ms 
+const unsigned long refresh_time_debug = 1000; //Hago un print para debug cada 1000 ms 
 
 // Variables y constantes para hacer cambio en el rol de los anchors esclavos: 
 //1: Time management: 
@@ -213,27 +214,6 @@ void showData(){
     Serial.println("--------------------------------");
 }
 
-void showData_debug(){
-
-    Serial.println("--------- NUEVA MEDIDA ---------");
-    
-    for (int i = 0; i < numDispositivos ; i++){ 
-        if(medidas[i].active == true){
-            
-            Serial.print(" Dispositivos: ");
-            Serial.print(medidas[i].shortAddr_origin,HEX);
-            Serial.print(" -> ");
-            Serial.print(medidas[i].shortAddr_destiny,HEX);
-            Serial.print("\t Distancia: ");
-            Serial.print(medidas[i].distance);
-            Serial.print(" m \t RX power: ");
-            Serial.print(medidas[i].rxPower);
-            Serial.println(" dBm");
-        }
-    }
-    Serial.println("--------------------------------");
-    
-}
 
 void newRange(){
 
@@ -259,8 +239,7 @@ void inactiveDevice(DW1000Device *device){
     Serial.print("Conexión perdida con el dispositivo: ");
     Serial.println(dest_sa, HEX);
 
-    //Al estar inactivo, pongo en false esa propiedad:
-    medidas[index].active = false;
+    //medidas[index].active = false;
 }
 
 void loop(){
@@ -271,7 +250,7 @@ void loop(){
 
         if(current_time - last_print >= refresh_time_debug){
 
-            showData_debug();
+            showData();
             last_print = millis();
         }
     }
