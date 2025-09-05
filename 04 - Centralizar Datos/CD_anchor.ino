@@ -109,7 +109,7 @@ int searchDevice(uint16_t own_sa,uint16_t dest_sa){
     return -1; // if not, returns -1
 }
 
-void registerMeasure(uint16_t own_sa, uint16_t dest_sa, float dist, float rx_pwr){
+void logMeasure(uint16_t own_sa, uint16_t dest_sa, float dist, float rx_pwr){
 
     int index = searchDevice(own_sa,dest_sa);
 
@@ -154,7 +154,7 @@ void DataReport(const byte* data){
         memcpy(&rxPower,   data + index, 4); index += 4;
 
         
-        registerMeasure(origin_short_addr, destiny_short_addr, distance, rxPower);
+        logMeasure(origin_short_addr, destiny_short_addr, distance, rxPower);
     }
 }
 
@@ -215,7 +215,7 @@ void newRange(){
     float dist = DW1000Ranging.getDistantDevice()->getRange();
     float rx_pwr = DW1000Ranging.getDistantDevice()->getRXPower();
 
-    registerMeasure(own_short_addr,dest_sa, dist, rx_pwr);
+    logMeasure(own_short_addr,dest_sa, dist, rx_pwr);
 
 }
 
@@ -251,8 +251,12 @@ void loop(){
         last_switch = millis();
         delay(100);
         DW1000Ranging.transmitModeSwitch(currentModeisInitiator);
-        // Solo le paso 1 parámetro -> el modo que quiero: true = pasar a iniciador
-        // El segundo parámetro es null -> Hace broadcast: se lo pide a todos los slave_anchors
+        //Only 1 parameter: a boolean to indicate which mode I want to switch to:
+        // true = toInitiator
+    
+        // 2nd parameter is the target device. 
+        // If null --> Broadcast (to all devices listening)
+        // If != 0, message is sent to the specified device. 
         delay(100);
         currentModeisInitiator = !currentModeisInitiator;
     }

@@ -477,12 +477,10 @@ void DW1000RangingClass::loop() {
 		}
 		else if(messageType == REQUEST_DATA){
 
-			//byte address[8]; -> In case I ever need the long address
+			//byte address[8]; -> In case the long address is ever needed
 			byte shortAddress[2];
 			_globalMac.decodeBlinkFrame(data, nullptr, shortAddress);
 			//_globalMac.decodeBlinkFrame(data, address, shortAddress);
-
-			
 
 			if(_handleDataRequest){
 				(* _handleDataRequest)(shortAddress);
@@ -491,7 +489,9 @@ void DW1000RangingClass::loop() {
 
 		}
 		else if(messageType == DATA_REPORT){
-
+			
+			//The master anchor requests the slaves for a data report.
+			// Slaves will have to send their list of devices and measurements.
 			
 			if(_handleDataReport){
 				(* _handleDataReport)(data);
@@ -976,11 +976,11 @@ void DW1000RangingClass::receiver() {
 	DW1000.startReceive();
 }
 
-/*
+/* ###################################################
 * -------------------------------------------------
 * Methods: Mode Switch, Data Request & Data Report
 * -------------------------------------------------
-*/
+###################################################### */
 
 void DW1000RangingClass::transmitModeSwitch(bool toInitiator, DW1000Device* device){
 
