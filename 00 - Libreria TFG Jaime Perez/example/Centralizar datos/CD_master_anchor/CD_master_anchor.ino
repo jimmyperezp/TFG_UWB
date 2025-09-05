@@ -31,7 +31,7 @@ struct Measurement {
     uint16_t short_addr_dest;
     float distance;      // Last measured distance (in meters)
     float rxPower;        // Last RX power measured with the destiny (in dBm)
-    bool activo;        // Checks if the destiny device is active. 
+    bool active;        // Checks if the destiny device is active. 
 };
 
 // Variables & constants to register the incoming ranges
@@ -117,7 +117,7 @@ void logMeasure(uint16_t own_sa,uint16_t dest_sa, float dist, float rx_pwr){
 
         measurements[index].distance = dist; 
         measurements[index].rxPower = rx_pwr; 
-        measurements[index].activo = true;
+        measurements[index].active = true;
 
     }
     else if (amountDevices < MAX_DEVICES){
@@ -126,7 +126,7 @@ void logMeasure(uint16_t own_sa,uint16_t dest_sa, float dist, float rx_pwr){
         measurements[amountDevices].shortAddr = sa;
         measurements[amountDevices].distance = dist;
         measurements[amountDevices].rxPower = rx_pwr;
-        measurements[amountDevices].activo = true;
+        measurements[amountDevices].active = true;
         amountDevices ++; // And increase the device number in 1.
         
     }
@@ -154,7 +154,6 @@ void DataReport(const byte* data){
         memcpy(&distance, data + index, 4); index += 4;
         memcpy(&rxPower,   data + index, 4); index += 4;
 
-        
         logMeasure(origin_short_addr, destiny_short_addr, distance, rxPower);
     }
 }
@@ -165,7 +164,6 @@ void DataRequest(void){
     // The slave answers by sending the data report:
 
     DW1000Ranging.transmitDataReport(medidas,numDispositivos);
-
 
 }
 
@@ -192,7 +190,7 @@ void showData(){
     Serial.println("--------- NUEVA MEDIDA ---------");
     
     for (int i = 0; i < amountDevices ; i++){ 
-        if(measurements[i].activo == true){
+        if(measurements[i].active == true){
             Serial.print(" Dispositivos: ");
             Serial.print(medidas[i].shortAddr_origin,HEX);
             Serial.print(" -> ");
@@ -232,8 +230,7 @@ void inactiveDevice(DW1000Device *device){
     Serial.print("Conexión perdida con el dispositivo: ");
     Serial.println(sa, HEX);
 
-    //Al estar inactivo, pongo en false esa propiedad:
-    measurements[index].activo = false;
+    //measurements[index].active = false;
 }
 
 void loop(){
@@ -245,20 +242,30 @@ void loop(){
         showData();
         last_print = millis();
     }
-    else if(IS_MASTER && current_time - last_switch >= switch_time){
 
-        last_switch = millis();
-        delay(100);
-        DW1000Ranging.transmitModeSwitch(currentModeisInitiator);
+    if (IS_MASTER){
 
-        //Only 1 parameter: a boolean to indicate which mode I want to switch to:
-        // true = toInitiator
-    
-        // 2nd parameter is the target device. 
-        // If null --> Broadcast (to all devices listening)
-        // If != 0, message is sent to the specified device. 
-        delay(100);
-        currentModeisInitiator = !currentModeisInitiator;
+        if(current_time - last_switch >= switch_time){
+
+            last_switch = millis();
+            delay(100);
+            DW1000Ranging.transmitModeSwitch(currentModeisInitiator);
+
+            //Only 1 parameter: a boolean to indicate which mode I want to switch to:
+            // true = toInitiator
+            
+            // 2nd parameter is the target device. 
+            // If null --> Broadcast (to all devices listening)
+            // If != 0, message is sent to the specified device. 
+            delay(100);
+            currentModeisInitiator = !currentModeisInitiator;
+        }
+
+        else if (current_time - last_print >= refresh_time){
+
+            showData();
+            last_print = millis();
+        }
     }
 
 }
