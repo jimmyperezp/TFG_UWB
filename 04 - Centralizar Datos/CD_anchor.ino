@@ -21,16 +21,18 @@ const uint8_t PIN_SS = 4;   // spi select pin
 
 // Definiciones propias del Anchor:
 #define DEVICE_ADDR "A1:00:5B:D5:A9:9A:E2:9C" 
+uint16_t own_short_addr = DW1000Ranging.getCurrentShortAddress();
 uint16_t Adelay = 16580;
 #define IS_MASTER true
 //#define IS_MASTER false
 
 // Estructura para gestionar las medidas recibidas en el maestro.
 struct Medida {
-    uint16_t shortAddr;   // ID del dispositivo desde el que se recibe
-    float distancia;      // Última distancia medida (m)
-    float rxPower;        // Última potencia recibida (dBm)
-     bool activo;        //Para saber si está activo o no, y evitar mostrarlo por pantalla.
+    uint16_t shortAddr_origin;
+    uint16_t shortAddr_destiny;   
+    float distance;       // Last measured distance (in meters)
+    float rxPower;        // Last RX power measured with the destiny (in dBm)
+     bool active;        // Checks if the destiny device is active. 
 };
 
 //Variables y constantes para registrar las medidas recibidas
@@ -70,57 +72,105 @@ void setup(){
 
     
     if (IS_MASTER){
-        //Esto es, que el anchor inicie la comunicación. 
-        // En la librería, eso lo llaman: actuar como un iniciador: 
+        //Master's callbacks: 
+        // For when the slaves send a data report:
+        DW1000Ranging.attachDataReport(DataReport);
+              
         DW1000Ranging.startAsInitiator(DEVICE_ADDR,DW1000.MODE_LONGDATA_RANGE_LOWPOWER, false);
+        // This means: the anchor starts the communication. 
+        // In the library, this is called: act as an Initiator 
     }
     else{
+
+        //Callbacks for the slave anchors:
         
+        //1: They must respond to a change request message (Sent by the master)
         DW1000Ranging.attachModeChangeRequest(ModeChangeRequest);
-        //En la inicialización, no quiero que esté haciendo poll. Comienza como anchor "normal". Responderá al anchor maestro para medir la posición entre ambos.
+
+        //2: Must answer to a data request message (also sent by master)
+        DW1000Ranging.attachDataRequested(DataRequest);
+        
+        //Finally, slaves are started as responders:
         DW1000Ranging.startAsResponder(DEVICE_ADDR,DW1000.MODE_LONGDATA_RANGE_LOWPOWER, false);  
+
     } 
 }
 
-int buscarDispositivo(uint16_t sa){
+int searchDevice(uint16_t own_sa,uint16_t dest_sa){
     
     for (int i=0 ; i < numDispositivos ; i++){
 
-        if (medidas[i].shortAddr == sa) {
+        if ((medidas[i].shortAddr.origin == own_sa)&&(medidas[i].shortAddr_destiny == dest_sa)) {
             return i; 
-            // Si sí que hay coincidencia, devuelve el índice
+            // If found, returns the index
+            
         }
     }
-    return -1; //si no se ha encontrado coincidencia
+    return -1; // if not, returns -1
 }
 
-void registrarMedida(uint16_t sa, float dist, float rx_pwr){
+void registerMeasure(uint16_t own_sa, uint16_t dest_sa, float dist, float rx_pwr){
 
-    int index = buscarDispositivo(sa);
+    int index = searchDevice(own_sa,dest_sa);
 
-    if (index != -1){ //Esto es: si sí que hay coincidencia
+    if (index != -1){ // This means: it was found.
 
-        medidas[index].distancia = dist; 
+        medidas[index].distance = dist; 
         medidas[index].rxPower = rx_pwr; 
-        medidas[index].activo = true;
+        medidas[index].active = true;
 
     }
     else if (numDispositivos < MAX_DISPOSITIVOS){
-        //Si no hay coincidencia, registro uno nuevo:
-        medidas[numDispositivos].shortAddr = sa;
-        medidas[numDispositivos].distancia = dist;
+        // If not found, i need to make a new entry to the struct.
+        medidas[numDispositivos].shortAddr_origin = own_sa;
+        medidas[numDispositivos].shortAddr_destiny = dest_sa;
+        medidas[numDispositivos].distance = dist;
         medidas[numDispositivos].rxPower = rx_pwr;
-        medidas[numDispositivos].activo = true;
-        numDispositivos ++; //aumento en 1 la lista de dispositivos registrados.
+        medidas[numDispositivos].active = true;
+        numDispositivos ++; // And increase the device number in 1.
     }
     else{
         Serial.println("Lista de dispositivos llena");
     }
 }
 
-void ModeChangeRequest(bool toTag){
 
-    if(oInitiator == true){
+void DataReport(const byte* data){
+
+    uint8_t index = SHORT_MAC_LEN + 1;
+
+    uint16_t origin_short_addr = ((uint16_t)data[index] << 8) | data[index + 1];
+    index += 2;
+
+    uint8_t numMedidas = data[index++];
+
+    for (int i = 0; i < numMedidas; i++) {
+
+        uint16_t destiny_short_addr = ((uint16_t)data[index] << 8) | data[index + 1];
+        index += 2;
+
+        float distance, rxPower;
+        memcpy(&distance, data + index, 4); index += 4;
+        memcpy(&rxPower,   data + index, 4); index += 4;
+
+        
+        registerMeasure(origin_short_addr, destiny_short_addr, distance, rxPower);
+    }
+}
+
+void DataRequest(void){
+
+    // Called when the master sends the slave a data request.
+    // The slave answers by sending the data report:
+
+    DW1000Ranging.transmitDataReport(medidas,numDispositivos);
+
+
+}
+
+void ModeChangeRequest(bool toInitiator){
+
+    if(toInitiator == true){
 
         DW1000.idle();
         delay(100);
@@ -136,20 +186,20 @@ void ModeChangeRequest(bool toTag){
         
     }
 }
-void MostrarDatos(){
 
-    byte* sa_origin = DW1000Ranging.getCurrentShortAddress();
+void showData(){
+
     Serial.println("--------- NUEVA MEDIDA ---------");
     
     for (int i = 0; i < numDispositivos ; i++){ 
-        if(medidas[i].activo == true){
+        if(medidas[i].active == true){
             
             Serial.print(" Dispositivos: ");
-            Serial.print(addr[0],HEX);
+            Serial.print(medidas[i].shortAddr_origin,HEX);
             Serial.print(" -> ");
-            Serial.print(medidas[i].shortAddr,HEX);
+            Serial.print(medidas[i].shortAddr_destiny,HEX);
             Serial.print("\t Distancia: ");
-            Serial.print(medidas[i].distancia);
+            Serial.print(medidas[i].distance);
             Serial.print(" m \t RX power: ");
             Serial.print(medidas[i].rxPower);
             Serial.println(" dBm");
@@ -161,11 +211,11 @@ void MostrarDatos(){
 
 void newRange(){
 
-    uint16_t sa = DW1000Ranging.getDistantDevice()->getShortAddress();
+    uint16_t dest_sa = DW1000Ranging.getDistantDevice()->getShortAddress();
     float dist = DW1000Ranging.getDistantDevice()->getRange();
     float rx_pwr = DW1000Ranging.getDistantDevice()->getRXPower();
 
-    registrarMedida(sa, dist, rx_pwr);
+    registerMeasure(own_short_addr,dest_sa, dist, rx_pwr);
 
 }
 
@@ -177,14 +227,14 @@ void newDevice(DW1000Device *device){
 
 void inactiveDevice(DW1000Device *device){
 
-    uint16_t sa = device->getShortAddress();
-    int index = buscarDispositivo(sa);
+    uint16_t dest_sa = device->getShortAddress();
+    int index = searchDevice(sa);
 
     Serial.print("Conexión perdida con el dispositivo: ");
-    Serial.println(sa, HEX);
+    Serial.println(dest_sa, HEX);
 
     //Al estar inactivo, pongo en false esa propiedad:
-    medidas[index].activo = false;
+    medidas[index].active = false;
 }
 
 void loop(){
@@ -193,7 +243,7 @@ void loop(){
     current_time = millis();
     if(current_time - last_print >= refresh_time){
 
-        MostrarDatos();
+        showData();
         last_print = millis();
     }
     else if(IS_MASTER && current_time - last_switch >= switch_time){

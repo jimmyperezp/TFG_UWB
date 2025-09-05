@@ -122,9 +122,10 @@ public:
 	static void attachModeChangeRequest(void (* handleModeChange)(bool toInitiator)){ _handleModeChangeRequest = handleModeChange;}
 
 	// Callback for when data is requested (slave anchors have access to this)
-	static void attachDataRequested(void *handleDataRequested)(const byte* shortAddress){ _handleDataRequested = handleDataRequested; }
+	static void attachDataRequest(void (*handleDataRequest)(const byte* shortAddress)){ _handleDataRequest = handleDataRequest; }
 
-	
+	//Callback for when the master receives a data_report message (only the master anchor has access to this)
+	static void attachDataReport(void (*handleDataReport)(const byte* dataReport)){ _handleDataReport = handleDataReport;}
 
 
 	static DW1000Device* getDistantDevice();
@@ -137,6 +138,8 @@ public:
 	void transmitModeSwitch(bool toInitiator, DW1000Device* device = nullptr);
 
 	void transmitDataRequest(DW1000Device* device = nullptr);
+
+	void transmitDataReport(Medida* medidas, int numMedidas, DW1000Device* device = nullptr);
 
 private:
 	//other devices in the network
@@ -158,7 +161,8 @@ private:
 
 	static void (* _handleModeChangeRequest)(bool toInitiator);
 
-	static void (* _handleDataRequested)(const byte* shortAddress);
+	static void (* _handleDataRequest)(const byte* shortAddress);
+	statit void (* _handleDataReport)(const byte* dataReport);
 	
 	//sketch type (Initiator or responder)
 	static int16_t          _type; //0 for Initiator and 1 for responder

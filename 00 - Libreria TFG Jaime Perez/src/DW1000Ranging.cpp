@@ -88,7 +88,8 @@ void (* DW1000RangingClass::_handleBlinkDevice)(DW1000Device*) = 0;
 void (* DW1000RangingClass::_handleNewDevice)(DW1000Device*) = 0;
 void (* DW1000RangingClass::_handleInactiveDevice)(DW1000Device*) = 0;
 void (* DW1000RangingClass::_handleModeChangeRequest)(bool toInitiator) = 0;
-void (* DW1000RangingClass::_handleDataRequested)(const byte*) = 0;
+void (* DW1000RangingClass::_handleDataRequest)(const byte*) = 0;
+void (* DW1000RangingClass::_handleDataReport)(const byte*) = 0;
 
 /* ###########################################################################
  * #### Init and end #######################################################
@@ -483,11 +484,18 @@ void DW1000RangingClass::loop() {
 
 			
 
-			if(_handleDataRequested){
-				(* _handleDataRequested)(shortAddress);
+			if(_handleDataRequest){
+				(* _handleDataRequest)(shortAddress);
 			}
 			return;
 
+		}
+		else if(messageType == DATA_REPORT){
+
+			
+			if(_handleDataReport){
+				(* _handleDataReport)(data);
+			}
 		}
 
 		if(messageType == BLINK && _type == RESPONDER) {
@@ -1039,6 +1047,65 @@ void DW1000RangingClass::transmitRequestData(DW1000Device* device){
 
 }
 
+
+void DW1000RangingClass::transmitDataReport(Medida* medidas, int numMedidas, DW1000Device* device) {
+
+    byte dest[2];
+
+    // Destiny selection: broadcast or unicast
+    if (device == nullptr) {
+
+        dest[0] = 0xFF;
+        dest[1] = 0xFF;
+    } 
+	else {
+        memcpy(dest, device->getByteShortAddress(), 2);
+    }
+
+    transmitInit(); //Start a new transmit to clean up the data buffer
+
+    _globalMac.generateShortMACFrame(data, _currentShortAddress, dest);
+	//First, generate MACFrame in short Mode.
+
+    // Then, first byte is reserved to the type of message.
+    data[SHORT_MAC_LEN] = DATA_REPORT;
+
+    // Variable "index" is used to fill up the data buffer.
+    uint8_t index = SHORT_MAC_LEN + 1;
+
+    // 2 bytes for the slave's shortAddress
+    data[index++] = _currentShortAddress[0];
+    data[index++] = _currentShortAddress[1];
+
+    // 1 byte for number of measurements that are going to be sent.
+    data[index++] = numMedidas;
+
+    // Before sending, I check if there's enough space for the full message:
+
+    size_t totalPayloadSize = 3 + numMedidas * 10;  // 3 bytes fijos + 10 por medición
+    size_t totalMessageSize = SHORT_MAC_LEN + 1 + totalPayloadSize;
+
+    if (totalMessageSize > LEN_DATA) {
+        if (DEBUG) {
+            Serial.println(F("Error: DATA_REPORT excede el tamaño del buffer data[]."));
+        }
+        return;  // If there isn't enough space, I return without sending it.
+    }
+
+    // 10 bytes for each devices' measurement:
+	// 2 for the shortAddress of the measured device
+	// 4 for the float with the measured distance
+	// 4 for the rx Power measured in that communication. 
+
+    for (uint8_t i = 0; i < numMedidas; i++) {
+        memcpy(data + index, &medidas[i].shortAddr, 2); index += 2;
+        memcpy(data + index, &medidas[i].distancia, 4); index += 4;
+        memcpy(data + index, &medidas[i].rxPower, 4);   index += 4;
+    }
+
+    // Transmitir el mensaje
+    transmit(data);
+}
 
 
 /* ###########################################################################
