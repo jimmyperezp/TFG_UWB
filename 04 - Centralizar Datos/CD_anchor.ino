@@ -9,6 +9,10 @@ Además, debo variar también el ANCHOR_ADD del resto para que no coincidan*/
 #include "DW1000Ranging.h"
 #include "DW1000.h"
 
+//DEBUG MODE
+#define DEBUG 1
+
+
 //Definiciones de Pines de la placa usada:
 #define SPI_SCK 18
 #define SPI_MISO 19
@@ -43,7 +47,8 @@ int numDispositivos = 0;
 //Variables y constantes para mostrar los resultados por el monitor serie:
 unsigned long last_print = 0;   // Momento del último print
 unsigned long current_time = 0; // Instante actual. Lo usaré para calcular las diferencias
-const unsigned long refresh_time = 1000; //Hago un print cada 1000 ms 
+const unsigned long refresh_time = 40000; //Hago un print de los datos centralizados cada 40s
+const unsigned long refresh_time_debug = 1000; //Hago un print cada 1000 ms 
 
 // Variables y constantes para hacer cambio en el rol de los anchors esclavos: 
 //1: Time management: 
@@ -208,6 +213,27 @@ void showData(){
     Serial.println("--------------------------------");
 }
 
+void showData_debug(){
+
+    Serial.println("--------- NUEVA MEDIDA ---------");
+    
+    for (int i = 0; i < numDispositivos ; i++){ 
+        if(medidas[i].active == true){
+            
+            Serial.print(" Dispositivos: ");
+            Serial.print(medidas[i].shortAddr_origin,HEX);
+            Serial.print(" -> ");
+            Serial.print(medidas[i].shortAddr_destiny,HEX);
+            Serial.print("\t Distancia: ");
+            Serial.print(medidas[i].distance);
+            Serial.print(" m \t RX power: ");
+            Serial.print(medidas[i].rxPower);
+            Serial.println(" dBm");
+        }
+    }
+    Serial.println("--------------------------------");
+    
+}
 
 void newRange(){
 
@@ -241,23 +267,33 @@ void loop(){
 
     DW1000Ranging.loop();
     current_time = millis();
-    if(current_time - last_print >= refresh_time){
+    if(DEBUG){
 
-        showData();
-        last_print = millis();
+        if(current_time - last_print >= refresh_time_debug){
+
+            showData_debug();
+            last_print = millis();
+        }
     }
-    else if(IS_MASTER && current_time - last_switch >= switch_time){
+    else{
+        if(current_time - last_print >= refresh_time){
 
-        last_switch = millis();
-        delay(100);
-        DW1000Ranging.transmitModeSwitch(currentModeisInitiator);
-        //Only 1 parameter: a boolean to indicate which mode I want to switch to:
-        // true = toInitiator
-    
-        // 2nd parameter is the target device. 
-        // If null --> Broadcast (to all devices listening)
-        // If != 0, message is sent to the specified device. 
-        delay(100);
-        currentModeisInitiator = !currentModeisInitiator;
+            showData();
+            last_print = millis();
+        }
+        else if(IS_MASTER && current_time - last_switch >= switch_time){
+
+            last_switch = millis();
+            delay(100);
+            DW1000Ranging.transmitModeSwitch(currentModeisInitiator);
+            //Only 1 parameter: a boolean to indicate which mode I want to switch to:
+            // true = toInitiator
+        
+            // 2nd parameter is the target device. 
+            // If null --> Broadcast (to all devices listening)
+            // If != 0, message is sent to the specified device. 
+            delay(100);
+            currentModeisInitiator = !currentModeisInitiator;
+        }
     }
 }
