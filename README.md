@@ -52,6 +52,13 @@ Además, llevan el chip DW1000 para la comunicación UWB:
 <br></br>
 
 ## Contenido del Repositorio: 
+0. Librería actualizada para el desarrollo del TFG [Librería DW1000 actualizada por mí]()
+    - Dentro de la carpeta de la librería, hay un README explicando todos los cambios realizados sobre la versión anterior. 
+    - Los **ejemplos** que incluye la librería son los mismos que se van a detallar en las carpetas de este repositorio. La diferencia está en que en estas carpetas, incluyo un readme explicando cada uno de ellos.
+    - Además, los ejemplos de dentro de la librería están comentados y documentados en inglés, para su posterior publicación en GitHub.
+    - El procedimiento recomendado es: descargarse la librería para poder acceder a los ejemplos desde  el Arduino IDE. A la hora de trabajar con cada uno de ellos, acceder a su readme y entender su código desde las carpetas posteriores de este repositorio.
+
+
 
 1. Configuración de la ESP32 para usar en el Arduino IDE. Ver paso a paso: [configurar el Arduino IDE](#configuracion-arduino)
 
