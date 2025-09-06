@@ -50,7 +50,7 @@ To do so, I renamed some of the existing methods, cleaned and organized some seg
             - transmitDataRequest
             - transmitDataReport
         
-    - And, to handle when these messages are received, I declared the neccessary callbacks, which are linked to functions in the library's examples. These are explained inside the [General Repository Readme]
+    - And, to handle when these messages are received, I declared the neccessary callbacks, which are linked to functions in the library's examples. These are explained inside the [General Repository Readme](https://github.com/jimmyperezp/TFG_UWB/tree/main)
 
 
 <br><br>
