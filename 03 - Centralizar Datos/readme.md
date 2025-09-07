@@ -111,6 +111,22 @@ El código está adaptado para su escalabilidad, pero las pruebas se han realiza
 **Solución**: Si aumenta el número de slave anchors, hay que implementar una manera de enviar los mensajes de switch_mode, data_request y data_report haciendo unicast. Hay que tener en cuenta que al cambiar de modo y enviar los datos, las placas tienen un pequeño delay, por lo que hay que darles tiempo suficiente para realizar y mandar sus medidas correctamente.
 
 
+
+### Improvements yet to be made
+
+1. Data report flow & order:
+
+    Send the data request message to the slaves one by one, instead of broadcasting.  
+    Also, add the needed logic to request the data to the next slave once the previous one has sent its data report. 
+
+2. Clip the data received in case it exceeds the max length:  
+    In the current version, when receiving a data report, the 
+<br><br>
+
+
+
+
+
 <br><br>
 ------------
 Autor: Jaime Pérez  
