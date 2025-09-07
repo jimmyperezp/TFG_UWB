@@ -74,6 +74,15 @@
 #define DEBUG false
 #endif
 
+// Struct to handle the known measurements among the system's devices:
+struct Measurement {
+    uint16_t short_addr_origin;   
+    uint16_t short_addr_dest;
+    float distance;      // Last measured distance (in meters)
+    float rxPower;        // Last RX power measured with the destiny (in dBm)
+    bool active;        // Checks if the destiny device is active. 
+};
+
 
 class DW1000RangingClass {
 public:
@@ -139,7 +148,7 @@ public:
 
 	void transmitDataRequest(DW1000Device* device = nullptr);
 
-	void transmitDataReport(Medida* medidas, int numMedidas, DW1000Device* device = nullptr);
+	void transmitDataReport(Measurement* measurements, int numMedidas, DW1000Device* device = nullptr);
 
 private:
 	//other devices in the network
@@ -162,7 +171,7 @@ private:
 	static void (* _handleModeChangeRequest)(bool toInitiator);
 
 	static void (* _handleDataRequest)(const byte* shortAddress);
-	statit void (* _handleDataReport)(const byte* dataReport);
+	static void (* _handleDataReport)(const byte* dataReport);
 	
 	//sketch type (Initiator or responder)
 	static int16_t          _type; //0 for Initiator and 1 for responder
