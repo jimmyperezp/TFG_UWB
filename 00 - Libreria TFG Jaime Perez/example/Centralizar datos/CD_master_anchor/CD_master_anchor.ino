@@ -110,7 +110,7 @@ int searchDevice(uint16_t own_sa,uint16_t dest_sa){
     
     for (int i=0 ; i < amountDevices ; i++){
 
-        if ((measurements[i].short_addr_origin == own_sa)&&(measurements[i].shortAddr_destiny == short_addr_dest)) {
+        if ((measurements[i].short_addr_origin == own_sa)&&(measurements[i].short_addr_dest == dest_sa)) {
             return i; 
             // If found, returns the index
         }
