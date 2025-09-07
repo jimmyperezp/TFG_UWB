@@ -88,7 +88,7 @@ void (* DW1000RangingClass::_handleBlinkDevice)(DW1000Device*) = 0;
 void (* DW1000RangingClass::_handleNewDevice)(DW1000Device*) = 0;
 void (* DW1000RangingClass::_handleInactiveDevice)(DW1000Device*) = 0;
 void (* DW1000RangingClass::_handleModeChangeRequest)(bool toInitiator) = 0;
-void (* DW1000RangingClass::_handleDataRequest)(const byte*) = 0;
+void (* DW1000RangingClass::_handleDataRequest)(byte*) = 0;
 void (* DW1000RangingClass::_handleDataReport)(const byte*) = 0;
 
 /* ###########################################################################
@@ -479,8 +479,8 @@ void DW1000RangingClass::loop() {
 
 			//byte address[8]; -> In case the long address is ever needed
 			byte shortAddress[2];
-			_globalMac.decodeBlinkFrame(data, nullptr, shortAddress);
-			//_globalMac.decodeBlinkFrame(data, address, shortAddress);
+			_globalMac.decodeShortMACFrame(data, nullptr, shortAddress);
+			//_globalMac.decodeShortMACFrame(data, address, shortAddress);
 
 			if(_handleDataRequest){
 				(* _handleDataRequest)(shortAddress);
@@ -814,6 +814,7 @@ void DW1000RangingClass::transmit(byte datas[]) {
 void DW1000RangingClass::transmit(byte datas[], DW1000Time time) {
 	DW1000.setDelay(time);
 	DW1000.setData(data, LEN_DATA);
+	//DW1000.setData(datas, LEN_DATA);
 	DW1000.startTransmit();
 }
 
@@ -1021,7 +1022,7 @@ void DW1000RangingClass::transmitModeSwitch(bool toInitiator, DW1000Device* devi
 }
 
 
-void DW1000RangingClass::transmitRequestData(DW1000Device* device){
+void DW1000RangingClass::transmitDataRequest(DW1000Device* device){
 
 	//This method works just as the "transmitModeSwitch". See explanations and commentaries there.
 	transmitInit(); 
@@ -1048,7 +1049,7 @@ void DW1000RangingClass::transmitRequestData(DW1000Device* device){
 }
 
 
-void DW1000RangingClass::transmitDataReport(Medida* medidas, int numMedidas, DW1000Device* device) {
+void DW1000RangingClass::transmitDataReport(Measurement* measurements, int numMeasures, DW1000Device* device) {
 
     byte dest[2];
 
@@ -1078,11 +1079,11 @@ void DW1000RangingClass::transmitDataReport(Medida* medidas, int numMedidas, DW1
     data[index++] = _currentShortAddress[1];
 
     // 1 byte for number of measurements that are going to be sent.
-    data[index++] = numMedidas;
+    data[index++] = numMeasures;
 
     // Before sending, I check if there's enough space for the full message:
 
-    size_t totalPayloadSize = 3 + numMedidas * 10;  // 3 bytes fijos + 10 por medición
+    size_t totalPayloadSize = 3 + numMeasures * 10;  // 3 bytes fijos + 10 por medición
     size_t totalMessageSize = SHORT_MAC_LEN + 1 + totalPayloadSize;
 
     if (totalMessageSize > LEN_DATA) {
@@ -1097,10 +1098,10 @@ void DW1000RangingClass::transmitDataReport(Medida* medidas, int numMedidas, DW1
 	// 4 for the float with the measured distance
 	// 4 for the rx Power measured in that communication. 
 
-    for (uint8_t i = 0; i < numMedidas; i++) {
-        memcpy(data + index, &medidas[i].shortAddr, 2); index += 2;
-        memcpy(data + index, &medidas[i].distancia, 4); index += 4;
-        memcpy(data + index, &medidas[i].rxPower, 4);   index += 4;
+    for (uint8_t i = 0; i < amountDevices; i++) {
+        memcpy(data + index, &measurements[i].short_addr_dest, 2); index += 2;
+        memcpy(data + index, &measurements[i].distance, 4); index += 4;
+        memcpy(data + index, &measurements[i].rxPower, 4);   index += 4;
     }
 
     // Transmitir el mensaje
