@@ -131,7 +131,7 @@ public:
 	static void attachModeChangeRequest(void (* handleModeChange)(bool toInitiator)){ _handleModeChangeRequest = handleModeChange;}
 
 	// Callback for when data is requested (slave anchors have access to this)
-	static void attachDataRequest(void (*handleDataRequest)(const byte* shortAddress)){ _handleDataRequest = handleDataRequest; }
+	static void attachDataRequest(void (*handleDataRequest)(byte* shortAddress)){ _handleDataRequest = handleDataRequest; }
 
 	//Callback for when the master receives a data_report message (only the master anchor has access to this)
 	static void attachDataReport(void (*handleDataReport)(const byte* dataReport)){ _handleDataReport = handleDataReport;}
