@@ -1,5 +1,5 @@
-// Centralizar datos
-// TAG (Actuará como respondedor únicamente)
+// CENTRALIZE DATA
+// TAG (Will only act as a responder.)
 
 #include <SPI.h>
 #include "DW1000Ranging.h"
@@ -17,8 +17,6 @@ const uint8_t PIN_SS = 4;   // spi select pin
 
 // TAG antenna delay defaults to 16384
 
-// Los 2 bytes de la izquierda son la short address.
-// NOMENCLATURA: A para Anchors, B para Tags
 #define DEVICE_ADDR "B1:00:22:EA:82:60:3B:9C"
 
 void setup()
@@ -35,6 +33,5 @@ void setup()
 }
 
 void loop(){
-
   DW1000Ranging.loop();
 }
