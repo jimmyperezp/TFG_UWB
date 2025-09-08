@@ -170,7 +170,7 @@ private:
 
 	static void (* _handleModeChangeRequest)(bool toInitiator);
 
-	static void (* _handleDataRequest)(const byte* shortAddress);
+	static void (* _handleDataRequest)(byte* shortAddress);
 	static void (* _handleDataReport)(const byte* dataReport);
 	
 	//sketch type (Initiator or responder)

@@ -254,7 +254,7 @@ void inactiveDevice(DW1000Device *device){
     Serial.println(dest_sa, HEX);
     
     //int index = searchDevice(own_short_addr,sa);
-    //measurements[index].active = false;
+    //if (index != 0){ measurements[index].active = false;}
 }
 
 void loop(){

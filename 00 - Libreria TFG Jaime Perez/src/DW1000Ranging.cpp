@@ -1098,7 +1098,7 @@ void DW1000RangingClass::transmitDataReport(Measurement* measurements, int numMe
 	// 4 for the float with the measured distance
 	// 4 for the rx Power measured in that communication. 
 
-    for (uint8_t i = 0; i < amountDevices; i++) {
+    for (uint8_t i = 0; i < numMeasures; i++) {
         memcpy(data + index, &measurements[i].short_addr_dest, 2); index += 2;
         memcpy(data + index, &measurements[i].distance, 4); index += 4;
         memcpy(data + index, &measurements[i].rxPower, 4);   index += 4;
