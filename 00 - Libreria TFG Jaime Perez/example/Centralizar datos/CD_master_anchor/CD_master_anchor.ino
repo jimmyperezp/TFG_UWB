@@ -26,15 +26,6 @@ uint16_t Adelay = 16580;
 #define IS_MASTER true
 //#define IS_MASTER false
 
-// Struct to handle the known measurements among the system's devices:
-struct Measurement {
-    uint16_t short_addr_origin;   
-    uint16_t short_addr_dest;
-    float distance;      // Last measured distance (in meters)
-    float rxPower;        // Last RX power measured with the destiny (in dBm)
-    bool active;        // Checks if the destiny device is active. 
-};
-
 // Variables & constants to register the incoming ranges
 #define MAX_DEVICES 5
 Measurement measurements[MAX_DEVICES];
@@ -46,7 +37,6 @@ unsigned long last_switch = 0;
 unsigned long last_print = 0;   
 unsigned long last_report = 0;
 
-const unsigned long refresh_time = 1000;  
 const unsigned long switch_time = 10000; //Switch the slaves' mode every 10 secs
 const unsigned long report_time = 40000; // Ask for a data report every 40 secs
 
@@ -120,10 +110,12 @@ int searchDevice(uint16_t own_sa,uint16_t dest_sa){
 
 void logMeasure(uint16_t own_sa,uint16_t dest_sa, float dist, float rx_pwr){
 
+    // Firstly, checks if that communication has been logged before
     int index = searchDevice(own_sa,dest_sa);
 
     if (index != -1){ // This means: it was found.
 
+        // Only updates distance and rxPower.
         measurements[index].distance = dist; 
         measurements[index].rxPower = rx_pwr; 
         measurements[index].active = true;
@@ -146,7 +138,7 @@ void logMeasure(uint16_t own_sa,uint16_t dest_sa, float dist, float rx_pwr){
 }
 
 
-void DataReport(const byte* data){
+void DataReport(byte* data){
 
     uint16_t index = SHORT_MAC_LEN + 1;
 
@@ -156,9 +148,11 @@ void DataReport(const byte* data){
     uint16_t numMeasures = data[index++];
 
     //First, I check if the size is OK:
-    if(numMeasures*10>LEN_DATA-SHORT_MAC_LEN-3){
+    if(numMeasures*10>LEN_DATA-SHORT_MAC_LEN-4){
+        
         //Each measure is 10 bytes
-        // The header includes short_mac_len + 2 bytes for shortAddress + 1 byte for messageType
+        // The header includes short_mac_len + 2 bytes for shortAddress + 1 byte for messageType + 1 byte for numMeasures.
+
         Serial.println("The Data received is too long");
         return;
     }
