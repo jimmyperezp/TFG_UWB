@@ -477,10 +477,8 @@ void DW1000RangingClass::loop() {
 		}
 		else if(messageType == REQUEST_DATA){
 
-			//byte address[8]; -> In case the long address is ever needed
-			byte shortAddress[2];
-			_globalMac.decodeShortMACFrame(data, nullptr, shortAddress);
-			//_globalMac.decodeShortMACFrame(data, address, shortAddress);
+			byte shortAddress[2]; //Creates 2 bytes to save 'shortAddress'
+			_globalMac.decodeShortMACFrame(data, shortAddress); //To extract the shortAddress from the frame data[]
 
 			if(_handleDataRequest){
 				(* _handleDataRequest)(shortAddress);
