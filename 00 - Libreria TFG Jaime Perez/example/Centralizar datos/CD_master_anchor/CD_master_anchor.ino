@@ -34,18 +34,16 @@ int amountDevices = 0;
 // Time, mode switch and data report management: 
 unsigned long current_time = 0; 
 unsigned long last_switch = 0;
-unsigned long last_print = 0;   
 unsigned long last_report = 0;
 
-const unsigned long switch_time = 10000; //Switch the slaves' mode every 10 secs
-const unsigned long report_time = 40000; // Ask for a data report every 40 secs
-
+const unsigned long switch_time = 5000; //Switch the slaves' mode every 10 secs
+const unsigned long report_time = 12000; // Ask for a data report every 40 secs
 
 // Current mode management. Used to call the switch mode function.
-static bool currentModeisInitiator = false;
+static bool slaveIsInitiator = false;
+static bool report_pending = false;
 
 // CODE:
-
 void setup(){
 
     Serial.begin(115200);
@@ -61,7 +59,9 @@ void setup(){
     DW1000Ranging.attachNewDevice(newDevice);
     DW1000Ranging.attachInactiveDevice(inactiveDevice);   
 
-    
+    last_switch = millis();
+    last_report = millis();
+
     if (IS_MASTER){
 
         //Master's callbacks: 
@@ -112,6 +112,8 @@ void logMeasure(uint16_t own_sa,uint16_t dest_sa, float dist, float rx_pwr){
 
     // Firstly, checks if that communication has been logged before
     int index = searchDevice(own_sa,dest_sa);
+    
+    if(dist < 0){ dist = -dist;} //If the distance is <0, makes it >0
 
     if (index != -1){ // This means: it was found.
 
@@ -176,12 +178,19 @@ void DataRequest(byte* short_addr_requester){
 
     // Called when the master sends the slave a data request.
     // The slave answers by sending the data report:
+    
+    uint16_t numMeasures = amountDevices;
+
     DW1000Device* requester = DW1000Ranging.searchDistantDevice(short_addr_requester);
+
+
     if(!requester){
-        //In case there is a problem & the requester is not found.
+        //In case the requester is not found, sends the data report via broadcast:
+        DW1000Ranging.transmitDataReport((Measurement*)measurements,numMeasures,nullptr);
         return;
     }
-    uint16_t numMeasures = amountDevices;
+    //If it is found, sends the report via unicast
+    
     DW1000Ranging.transmitDataReport((Measurement*)measurements,numMeasures,requester);
 
 }
@@ -191,16 +200,16 @@ void ModeChangeRequest(bool toInitiator){
     if(toInitiator == true){
 
         DW1000.idle();
-        delay(100);
+       
         DW1000Ranging.startAsInitiator(DEVICE_ADDR,DW1000.MODE_LONGDATA_RANGE_LOWPOWER, false);
-        delay(100);
+       
     }
     else{
 
         DW1000.idle();
-        delay(100);
+        
         DW1000Ranging.startAsResponder(DEVICE_ADDR,DW1000.MODE_LONGDATA_RANGE_LOWPOWER, false);
-        delay(100);
+        
     }
 } 
 
@@ -258,11 +267,15 @@ void loop(){
 
         if (IS_MASTER){
 
-            if(current_time - last_switch >= switch_time){
+            if(!report_pending && (current_time - last_switch >= switch_time)){
 
-                last_switch = millis();
-                delay(100);
-                DW1000Ranging.transmitModeSwitch(currentModeisInitiator);
+                last_switch = current_time;
+                slaveIsInitiator = !slaveIsInitiator;
+                
+                Serial.print("CAMBIO A ");
+                Serial.println(slaveIsInitiator ? "INITIATOR" : "RESPONDER");
+
+                DW1000Ranging.transmitModeSwitch(slaveIsInitiator);
 
                 //Only 1 parameter: a boolean to indicate which mode I want to switch to:
                 // true = toInitiator
@@ -270,16 +283,20 @@ void loop(){
                 // 2nd parameter is the target device. 
                 // If null --> Broadcast (to all devices listening)
                 // If != 0, message is sent to the specified device. 
-                delay(100);
-                currentModeisInitiator = !currentModeisInitiator;
+                
+                
             }
 
             
-            else if (current_time - last_report >= report_time){
-
+            if (!slaveIsInitiator && (current_time - last_report >= report_time)){
+                
+                Serial.println("DATA REQUEST ENVIADO");
                 DW1000Ranging.transmitDataRequest();
                 //No device as parameter --> Broadcast
-                last_report = millis();
+                report_pending = true;
+
+                
+                last_report = current_time;
             }
     }
 
