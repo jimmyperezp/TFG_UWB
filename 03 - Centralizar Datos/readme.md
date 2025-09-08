@@ -110,21 +110,12 @@ El código está adaptado para su escalabilidad, pero las pruebas se han realiza
 
 **Solución**: Si aumenta el número de slave anchors, hay que implementar una manera de enviar los mensajes de switch_mode, data_request y data_report haciendo unicast. Hay que tener en cuenta que al cambiar de modo y enviar los datos, las placas tienen un pequeño delay, por lo que hay que darles tiempo suficiente para realizar y mandar sus medidas correctamente.
 
+**Problema #2**: Comprobar longitud del data Report
 
+- Al enviar el data report, si existe un elevado número de dispositivos en el sistema, puede que la información sobresalga del tamañano (LEN_DATA). Esto implicaría que el codigo empiece a leer "basura" una vez se salga de esa longitud de mensaje. 
+- En el código actual, se comprueba este tamaño, y si es superior al válido, hace un return, sin almacenar ni registrar nada. 
 
-### Improvements yet to be made
-
-1. Data report flow & order:
-
-    Send the data request message to the slaves one by one, instead of broadcasting.  
-    Also, add the needed logic to request the data to the next slave once the previous one has sent its data report. 
-
-2. Clip the data received in case it exceeds the max length:  
-    In the current version, when receiving a data report, the 
-<br><br>
-
-
-
+**Solución**: Debería hacer un clipping, es decir, no hacer un return sin guardar nada, sino al menos registrar todos los datos válidos que sí que quepan dentro del LEN_DATA. 
 
 
 <br><br>
