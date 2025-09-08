@@ -12,7 +12,6 @@ Además, debo variar también el ANCHOR_ADD del resto para que no coincidan*/
 //DEBUG MODE
 #define DEBUG 1
 
-
 //Board's pins definitions:
 #define SPI_SCK 18
 #define SPI_MISO 19
@@ -23,40 +22,31 @@ const uint8_t PIN_RST = 27; // reset pin
 const uint8_t PIN_IRQ = 34; // irq pin
 const uint8_t PIN_SS = 4;   // spi select pin
 
-// Devices' own definitions:
-// Nomenclature: A for Anchors, B for Tags
-#define DEVICE_ADDR "A1:00:5B:D5:A9:9A:E2:9C" 
-uint16_t own_short_addr = DW1000Ranging.getCurrentShortAddress();
+// Definiciones del dispositivo
+// Nomenclatura: A -> Anchors, B -> Tags
+#define DEVICE_ADDR "A1:00:5B:D5:A9:9A:E2:9C"
+
+uint16_t own_short_addr = 0; //La calculo después, una vez se ha iniciado el dispositivo.
 uint16_t Adelay = 16580;
 #define IS_MASTER true
 //#define IS_MASTER false
 
-// Struct to handle the known measurements among the system's devices:
-struct Medida {
-    uint16_t shortAddr_origin;
-    uint16_t shortAddr_destiny;   
-    float distance;       // Last measured distance (in meters)
-    float rxPower;        // Last RX power measured with the destiny (in dBm)
-     bool active;        // Checks if the destiny device is active. 
-};
-
-//Variables y constantes para registrar las medidas recibidas
+//Variables y constantes para registrar las measurements recibidas
 #define MAX_DISPOSITIVOS 5
-Medida medidas[MAX_DISPOSITIVOS];
+Medida measurements[MAX_DISPOSITIVOS];
 int numDispositivos = 0;
 
-// Variables & constants to register the incoming ranges
-unsigned long last_print = 0;  
+// Para controlar los tiempos y flujo de los datos
 unsigned long current_time = 0; 
-const unsigned long refresh_time = 40000; //Hago un print de los datos centralizados cada 40s
-const unsigned long refresh_time_debug = 1000; //Hago un print para debug cada 1000 ms 
-
-// Variables y constantes para hacer cambio en el rol de los anchors esclavos: 
-//1: Time management: 
 unsigned long last_switch = 0;
-const unsigned long switch_time = 10000;
+unsigned long last_print = 0;   
+unsigned long last_report = 0;
 
-//2: Current mode management: 
+const unsigned long refresh_time = 1000;  // DEBUG: Para mostrar el cambio en modo funcionamiento
+const unsigned long switch_time = 10000; // Paso los esclavos de iniciador a respondedor cada 10 secs.
+const unsigned long report_time = 40000; // Pido un data report cada 40 segundos. 
+
+// Variable para controlar el modo actual del esclavo.
 static bool currentModeisInitiator = false;
 
 //CÓDIGO:
@@ -78,61 +68,65 @@ void setup(){
 
     
     if (IS_MASTER){
-        //Master's callbacks: 
-        // For when the slaves send a data report:
+
+        // Callbacks del maestro: 
+        // Cuando el esclavo manda el data report:
         DW1000Ranging.attachDataReport(DataReport);
               
         DW1000Ranging.startAsInitiator(DEVICE_ADDR,DW1000.MODE_LONGDATA_RANGE_LOWPOWER, false);
-        // This means: the anchor starts the communication. 
-        // In the library, this is called: act as an Initiator 
+        // Significa que el anchor se encarga de empezar la comunicación (hace polling)
+       
     }
     else{
 
-        //Callbacks for the slave anchors:
+        //Callbacks de los anchors esclavos
         
-        //1: They must respond to a change request message (Sent by the master)
+        //1: Cuando se les pide cambiar de modo
         DW1000Ranging.attachModeChangeRequest(ModeChangeRequest);
 
-        //2: Must answer to a data request message (also sent by master)
+        //2: Cuando se les pide un data report (reciben un data request)
         DW1000Ranging.attachDataRequested(DataRequest);
         
-        //Finally, slaves are started as responders:
+        // Comienzan respondiendo a los polls del maestro (comienzan como respondedores)
         DW1000Ranging.startAsResponder(DEVICE_ADDR,DW1000.MODE_LONGDATA_RANGE_LOWPOWER, false);  
 
     } 
+    own_short_addr = getOwnShortAddress();
+    // Tras haber sido iniciado, guardo su short address en un uint16_t.
 }
 
 int searchDevice(uint16_t own_sa,uint16_t dest_sa){
     
     for (int i=0 ; i < numDispositivos ; i++){
 
-        if ((medidas[i].shortAddr_origin == own_sa)&&(medidas[i].shortAddr_destiny == dest_sa)) {
+        if ((measurements[i].shortAddr_origin == own_sa)&&(measurements[i].shortAddr_destiny == dest_sa)) {
             return i; 
-            // If found, returns the index
-            
+            // Si hay coincidencia, devuelve el índice
         }
     }
-    return -1; // if not, returns -1
+    return -1; // Si no, devuelve -1.
 }
 
 void logMeasure(uint16_t own_sa, uint16_t dest_sa, float dist, float rx_pwr){
 
-    int index = searchDevice(own_sa,dest_sa);
+    // Primero, busco si esa comunicación ya estaba registrada:
+    int index = searchDevice(own_sa,dest_sa); 
 
-    if (index != -1){ // This means: it was found.
+    if (index != -1){ // Si sí que lo ha encontrado:
 
-        medidas[index].distance = dist; 
-        medidas[index].rxPower = rx_pwr; 
-        medidas[index].active = true;
+        //solo actualizo los valores de distancia y potencia.
+        measurements[index].distance = dist; 
+        measurements[index].rxPower = rx_pwr; 
+        measurements[index].active = true;
 
     }
     else if (numDispositivos < MAX_DISPOSITIVOS){
-        // If not found, i need to make a new entry to the struct.
-        medidas[numDispositivos].shortAddr_origin = own_sa;
-        medidas[numDispositivos].shortAddr_destiny = dest_sa;
-        medidas[numDispositivos].distance = dist;
-        medidas[numDispositivos].rxPower = rx_pwr;
-        medidas[numDispositivos].active = true;
+        // Si no lo ha encontrado, guardo todo
+        measurements[numDispositivos].shortAddr_origin = own_sa;
+        measurements[numDispositivos].shortAddr_destiny = dest_sa;
+        measurements[numDispositivos].distance = dist;
+        measurements[numDispositivos].rxPower = rx_pwr;
+        measurements[numDispositivos].active = true;
         numDispositivos ++; // And increase the device number in 1.
     }
     else{
@@ -141,16 +135,29 @@ void logMeasure(uint16_t own_sa, uint16_t dest_sa, float dist, float rx_pwr){
 }
 
 
-void DataReport(const byte* data){
+void DataReport(byte* data){
 
     uint8_t index = SHORT_MAC_LEN + 1;
 
     uint16_t origin_short_addr = ((uint16_t)data[index] << 8) | data[index + 1];
     index += 2;
 
-    uint8_t numMedidas = data[index++];
+    uint8_t numMeasures = data[index++];
 
-    for (int i = 0; i < numMedidas; i++) {
+    //Primero, comprueba la longitud de los datos recibidos: 
+
+    if(numMeasures*10>LEN_DATA-SHORT_MAC_LEN-4){
+
+        // Cada medida ocupa 10 bytes
+        // El encabezado ocupa SHORT_MAC_LEN + 2 bytes del shortAddress + 1 byte del messageType + 1 byte del valor del numero de measurements enviado
+        
+        Serial.println("The Data received is too long");
+        return;
+    }
+
+    //Si está ok, continúo extrayendo los datos que me interesan:
+
+    for (int i = 0; i < numMeasures; i++) {
 
         uint16_t destiny_short_addr = ((uint16_t)data[index] << 8) | data[index + 1];
         index += 2;
@@ -162,15 +169,25 @@ void DataReport(const byte* data){
         
         logMeasure(origin_short_addr, destiny_short_addr, distance, rxPower);
     }
+
+    showData();
 }
 
-void DataRequest(void){
+void DataRequest(byte* short_addr_requester){
 
-    // Called when the master sends the slave a data request.
-    // The slave answers by sending the data report:
+    // El esclavo entra aquí cuando el maestro le ha enviado un data_request.
+    // Le debe responder enviándole los datos:
 
-    DW1000Ranging.transmitDataReport(medidas,numDispositivos);
+    DW1000Device* requester = DW1000Ranging.searchDistantDevice(short_addr_requester);
+    //1º guardo el dispositivo que lo ha pedido, para enviárselo solo a el
 
+    if(!requester){
+        // Si no lo encuentra, no lo envía a nadie.
+        return;
+    }
+
+    uint16_t numMeasures = amountDevices;
+    DW1000Ranging.transmitDataReport((Measurement*)measurements,numMeasures,requester);
 
 }
 
@@ -198,16 +215,16 @@ void showData(){
     Serial.println("--------- NUEVA MEDIDA ---------");
     
     for (int i = 0; i < numDispositivos ; i++){ 
-        if(medidas[i].active == true){
+        if(measurements[i].active == true){
             
             Serial.print(" Dispositivos: ");
-            Serial.print(medidas[i].shortAddr_origin,HEX);
+            Serial.print(measurements[i].short_addr_origin,HEX);
             Serial.print(" -> ");
-            Serial.print(medidas[i].shortAddr_destiny,HEX);
+            Serial.print(measurements[i].short_addr_dest,HEX);
             Serial.print("\t Distancia: ");
-            Serial.print(medidas[i].distance);
+            Serial.print(measurements[i].distance);
             Serial.print(" m \t RX power: ");
-            Serial.print(medidas[i].rxPower);
+            Serial.print(measurements[i].rxPower);
             Serial.println(" dBm");
         }
     }
@@ -239,7 +256,14 @@ void inactiveDevice(DW1000Device *device){
     Serial.print("Conexión perdida con el dispositivo: ");
     Serial.println(dest_sa, HEX);
 
-    //medidas[index].active = false;
+    if (DEBUG){
+
+        int index = searchDevice(own_short_addr,sa);
+        if (index != 0){
+             measurements[index].active = false;
+        }
+
+    }
 }
 
 void loop(){
@@ -248,13 +272,6 @@ void loop(){
     current_time = millis();
     if(DEBUG){
 
-        if(current_time - last_print >= refresh_time_debug){
-
-            showData();
-            last_print = millis();
-        }
-    }
-    else{
         if(current_time - last_print >= refresh_time){
 
             showData();
@@ -265,14 +282,39 @@ void loop(){
             last_switch = millis();
             delay(100);
             DW1000Ranging.transmitModeSwitch(currentModeisInitiator);
-            //Only 1 parameter: a boolean to indicate which mode I want to switch to:
+
+            //Solo le mando un parámetro: el booleano del modo al que quiero cambiar:
             // true = toInitiator
         
-            // 2nd parameter is the target device. 
-            // If null --> Broadcast (to all devices listening)
-            // If != 0, message is sent to the specified device. 
+            // El 2º parámetro es el dispositivo al que se lo pido.  
+            // Si lo dejo en blanco --> Broadcast (Lo envía a todos los dispositivos que estén escuchando)
+             
             delay(100);
             currentModeisInitiator = !currentModeisInitiator;
         }
+    }
+    
+    else{
+    
+        if (IS_MASTER){
+
+            if(current_time - last_switch >= switch_time){
+
+                last_switch = millis();
+                delay(100);
+                DW1000Ranging.transmitModeSwitch(currentModeisInitiator);
+
+                delay(100);
+                currentModeisInitiator = !currentModeisInitiator;
+            }
+
+            
+            else if (current_time - last_report >= report_time){
+
+                DW1000Ranging.transmitDataRequest();
+                last_report = millis();
+            }
+        }
+        
     }
 }
