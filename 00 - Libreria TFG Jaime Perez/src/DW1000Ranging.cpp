@@ -89,7 +89,7 @@ void (* DW1000RangingClass::_handleNewDevice)(DW1000Device*) = 0;
 void (* DW1000RangingClass::_handleInactiveDevice)(DW1000Device*) = 0;
 void (* DW1000RangingClass::_handleModeChangeRequest)(bool toInitiator) = 0;
 void (* DW1000RangingClass::_handleDataRequest)(byte*) = 0;
-void (* DW1000RangingClass::_handleDataReport)(const byte*) = 0;
+void (* DW1000RangingClass::_handleDataReport)(byte*) = 0;
 
 /* ###########################################################################
  * #### Init and end #######################################################
