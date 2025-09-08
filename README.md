@@ -24,10 +24,41 @@ Dentro de este repositorio se encuentran los códigos (librería incluida) utili
 
 Esta fase inicial consiste en la comunicación y uso de varias placas ESP32 + UWB. Se verá desde los primeros pasos para configurarlas y utilizarlas, hasta la comunicación y uso de un sistema en el que se integren más de un elemento de cada tipo. 
 
-Es importante tener clara la **nomenclatura** utilizada en el trabajo: 
 
-1. **ANCHOR**: Los Anchors son las anclas. Son las placas que se quedan "fijas" (o al menos, cuya posición es relativamente conocida)
-2. **TAG**: Son las placas móviles. 
+ 
+
+<br></br>
+
+## Conceptos previos: Banda Ultra Ancha (UWB)
+
+Para comenzar, es importante tener claros una serie de conceptos relacionados con la tecnología que se va a utilizar: 
+
+**1: Cómo calcular distancias: TWR**  
+
+Para calcular la distancia que existe entre 2 chips UWB, estos utilizan el protocolo de comunicación [Two-Way-Ranging](https://www.sewio.net/uwb-technology/two-way-ranging/). 
+
+![Imagen explicativa Two-Way-Ranging](https://cdn.sewio.net/wp-content/uploads/2016/04/TWR-Scheme.jpg)
+ 
+Esto consiste en que uno de los dispositivos comienza la comunicación haciendo *polling*, mientras que el otro se limita a responder.  
+1. El que hace polling envía sin parar un mensaje con el instante temporal en el que lo ha enviado, esperando recibir respuesta. 
+2. Si logra conectar con otro chip (que esté configurado como respondedor), este le devolverá el instante en el que recibió el mensaje original y el instante en el que ha enviado su respuesta.  
+3. El último paso es que el iniciador vuelve a enviarle al respondedor el instante en el que recibió su mensaje, y el instante de su mensaje final.  
+
+De este modo, el dispositivo configurado como respondedor conoce ya todos los instantes temporales en los que se ha enviado cada mensaje. Con ellos, puede calcular haciendo una simple resta el tiempo que dichos mensajes han estado en el aire. 
+Finalmente, haciendo una simple división usando la velocidad a la que se envían los datos, puede calcular la distancia entre ambos dispositivos. 
+
+Este proceso es el conocido como Two-Way-Ranging.
+
+**2: Nomenclatura:** 
+Teniendo en cuenta lo recién visto, en la librería se han declarado dos modos de operación para cada dispositivo: 
+
+1. **Iniciador**: Normalmente, este suele ser el Tag. Sin embargo, puede que las necesidades concretas del sistema sean distintas, así que he optado por este nombre.   
+El dispositivo iniciador es el que comienza el proceso de *polling*
+
+2. **Respondedor**: Lógicamente, es el que responde al poll inicial. Es en este dispositivo donde se realiza el cálculo de las distancias. 
+
+En la librería utilizada, el respondedor le envía un report al iniciador con el cálculo que ha realizado, de tal manera que ambos dispositivos tengan acceso a dicho valor, aunque sea el respondedor el encargado de calcularlo. 
+
 
 <br></br>
 
