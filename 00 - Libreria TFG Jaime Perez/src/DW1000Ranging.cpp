@@ -271,10 +271,7 @@ boolean DW1000RangingClass::addNetworkDevices(DW1000Device* device) {
 	}
 	
 	if(addDevice) {
-		if(_type == RESPONDER) //for now let's start with 1 INITIATOR
-		{
-			_networkDevicesNumber = 0;
-		}
+		
 		memcpy((uint8_t *)&_networkDevices[_networkDevicesNumber], device, sizeof(DW1000Device));  //3_16_24 pointer cast sjr
 		_networkDevices[_networkDevicesNumber].setIndex(_networkDevicesNumber);
 		_networkDevicesNumber++;
@@ -804,7 +801,8 @@ void DW1000RangingClass::transmitInit() {
 
 
 void DW1000RangingClass::transmit(byte datas[]) {
-	DW1000.setData(datas, LEN_DATA);
+	DW1000.setData(data, LEN_DATA);
+	//DW1000.setData(datas, LEN_DATA);
 	DW1000.startTransmit();
 }
 
