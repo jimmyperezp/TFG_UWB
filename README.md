@@ -52,7 +52,7 @@ Además, llevan el chip DW1000 para la comunicación UWB:
 <br></br>
 
 ## Contenido del Repositorio: 
-0. Librería actualizada para el desarrollo del TFG [Librería DW1000 actualizada por mí]()
+0. Librería actualizada para el desarrollo del TFG [Librería DW1000 actualizada por mí](00%20-%20Libreria%20TFG%20Jaime%20Perez)
     - Dentro de la carpeta de la librería, hay un README explicando todos los cambios realizados sobre la versión anterior. 
     - Los **ejemplos** que incluye la librería son los mismos que se van a detallar en las carpetas de este repositorio. La diferencia está en que en estas carpetas, incluyo un readme explicando cada uno de ellos.
     - Además, los ejemplos de dentro de la librería están comentados y documentados en inglés, para su posterior publicación en GitHub.
@@ -94,6 +94,5 @@ El repositorio está **activo**. Iré actualizándolo y subiendo los códigos em
 <br></br>
 
 -------------
-Autor: Jaime Pérez.
-
-Última modificación: 29/08/2025
+Autor: Jaime Pérez  
+Última modificación: 08/09/2025
