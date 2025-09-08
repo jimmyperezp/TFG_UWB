@@ -134,7 +134,7 @@ public:
 	static void attachDataRequest(void (*handleDataRequest)(byte* shortAddress)){ _handleDataRequest = handleDataRequest; }
 
 	//Callback for when the master receives a data_report message (only the master anchor has access to this)
-	static void attachDataReport(void (*handleDataReport)(const byte* dataReport)){ _handleDataReport = handleDataReport;}
+	static void attachDataReport(void (*handleDataReport)(byte* dataReport)){ _handleDataReport = handleDataReport;}
 
 
 	static DW1000Device* getDistantDevice();
@@ -171,7 +171,7 @@ private:
 	static void (* _handleModeChangeRequest)(bool toInitiator);
 
 	static void (* _handleDataRequest)(byte* shortAddress);
-	static void (* _handleDataReport)(const byte* dataReport);
+	static void (* _handleDataReport)(byte* dataReport);
 	
 	//sketch type (Initiator or responder)
 	static int16_t          _type; //0 for Initiator and 1 for responder
