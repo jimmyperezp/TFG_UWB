@@ -35,10 +35,11 @@ Para comenzar, es importante tener claros una serie de conceptos relacionados co
 
 **1: Cómo calcular distancias: TWR**  
 
-Para calcular la distancia que existe entre 2 chips UWB, estos utilizan el protocolo de comunicación [Two-Way-Ranging](https://www.sewio.net/uwb-technology/two-way-ranging/). 
+Para calcular la distancia que existe entre 2 chips UWB, estos utilizan el protocolo de comunicación 
 
-![Imagen explicativa Two-Way-Ranging](https://cdn.sewio.net/wp-content/uploads/2016/04/TWR-Scheme.jpg)
- 
+<img src="https://www.sewio.net/uwb-technology/two-way-ranging/" alt="Imagen explicativa TWR" width="300" height="300"/>
+
+
 Esto consiste en que uno de los dispositivos comienza la comunicación haciendo *polling*, mientras que el otro se limita a responder.  
 1. El que hace polling envía sin parar un mensaje con el instante temporal en el que lo ha enviado, esperando recibir respuesta. 
 2. Si logra conectar con otro chip (que esté configurado como respondedor), este le devolverá el instante en el que recibió el mensaje original y el instante en el que ha enviado su respuesta.  
