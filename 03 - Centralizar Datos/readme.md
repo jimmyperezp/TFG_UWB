@@ -118,6 +118,15 @@ El código está adaptado para su escalabilidad, pero las pruebas se han realiza
 **Solución**: Debería hacer un clipping, es decir, no hacer un return sin guardar nada, sino al menos registrar todos los datos válidos que sí que quepan dentro del LEN_DATA. 
 
 
+**Problema #3**: Momento de solicitar el data report
+
+En la versión actual del código, el maestro le pide al esclavo que vambie de modo periódicamente. De igual manera, solicita el data report también periódicamente.   
+Esta situación presenta un problema: 
+- Si el esclavo no ha cambiado a modo "responder" cuando le tocaba, estará en modo "initiator" cuando reciba el data request. A priori no hay problema por esto, pero el periodo en el que está recibiendo datos en este modo es mucho menor que si fuera "responder". 
+
+**Solución**: Podría añadir una flag interna en la librería para que, cuando se reciba el mode switch, registre el estado actual. De esta manera, puedo incluir alguna sección de lógica adicional para enviar el data request solo cuando el esclavo está respondiendo, avisando al usuario si no es así.  
+Además, debo afinar los tiempos para hacer un data report una vez en cada ciclo, es decir, cada vez que los esclavos pasan a modo "responder", y una vez les ha dado tiempo a hacer sus medidas, les pido el data report antes de volver a pasar a "initiator".
+
 <br><br>
 ------------
 Autor: Jaime Pérez  
