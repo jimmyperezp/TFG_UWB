@@ -231,6 +231,7 @@ void showData(){
         
     }
     Serial.println("--------------------------------");
+    report_pending = false;
 }
 
 
