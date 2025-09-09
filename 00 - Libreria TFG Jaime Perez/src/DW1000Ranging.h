@@ -43,10 +43,12 @@
 #define BLINK 4
 #define RANGING_INIT 5
 
-#define MODE_SWITCH 6 //To request a switch in mode. From initiator to responder (or viceversa)
-#define REQUEST_DATA 7 //The master anchor sends this message to request the slave anchors the data they've collected (this data includes the measurements from the slave to the rest of devices)
+//Messages used to control the data flow: 
+#define MODE_SWITCH 6  // To request a switch in mode. From initiator to responder (or viceversa)
+#define REQUEST_DATA 7 // The master anchor sends this message to request the slave anchors the data they've collected (this data includes the measurements from the slave to the rest of devices)
 #define DATA_REPORT 8 // The slave anchors respond with this message. In it, the requested data is codified.
 
+//Length of tha payload in the sent messages.
 #define LEN_DATA 90
 
 //Max devices we put in the networkDevices array ! Each DW1000Device is 74 Bytes in SRAM memory for now.
@@ -78,8 +80,8 @@
 struct Measurement {
     uint16_t short_addr_origin;   
     uint16_t short_addr_dest;
-    float distance;      // Last measured distance (in meters)
-    float rxPower;        // Last RX power measured with the destiny (in dBm)
+    float distance;     // Last measured distance (in meters)
+    float rxPower;      // Last RX power measured with the destiny (in dBm)
     bool active;        // Checks if the destiny device is active. 
 };
 
@@ -243,5 +245,3 @@ private:
 };
 
 extern DW1000RangingClass DW1000Ranging;
-
-#endif
