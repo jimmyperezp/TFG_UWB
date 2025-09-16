@@ -8,7 +8,11 @@ This library is a personal modification of the DW1000 chips library, used for UW
 Original Library (MakerFabs): [DW1000 Library](https://github.com/jremington/UWB-Indoor-Localization_Arduino/tree/main/DW1000_library) 
 - Functions documentation: [Library API (PDF)](https://cdn.rawgit.com/thotro/arduino-dw1000/master/extras/doc/DW1000_Arduino_API_doc.pdf)
 
-Latest library version : [Update by @Pizzo00](https://github.com/jremington/UWB-Indoor-Localization_Arduino/tree/main/DW1000_library_pizzo00)
+Previous library version : [Update by @Pizzo00](https://github.com/jremington/UWB-Indoor-Localization_Arduino/tree/main/DW1000_library_pizzo00)
+
+This updated version:
+- Documentation (Spanish): [Modificaciones de la librería](00%20-%20Libreria%20TFG%20Jaime%20Perez/Modificaciones%20librería%20DW1000.pdf)
+
 
 <br><br>
 ### Background and context:
