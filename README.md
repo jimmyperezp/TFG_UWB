@@ -35,8 +35,7 @@ Para comenzar, es importante tener claros una serie de conceptos relacionados co
 
 **1: Cómo calcular distancias: TWR**  
 
-Para calcular la distancia que existe entre 2 chips UWB, estos utilizan el protocolo de comunicación 
-
+Para calcular la distancia que existe entre 2 chips UWB, estos utilizan el protocolo de comunicación TWR (Two-Way-Ranging)
 <p align="center">
 <img src="https://cdn.sewio.net/wp-content/uploads/2016/04/TWR-Scheme.jpg" alt="Imagen explicativa TWR" width="400" height="400"/>
 <p/>
