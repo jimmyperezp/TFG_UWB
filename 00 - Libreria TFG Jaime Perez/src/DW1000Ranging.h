@@ -28,6 +28,7 @@
 
 #ifndef _DW1000Ranging_H_INCLUDED
 #define _DW1000Ranging_H_INCLUDED
+#endif
 
 #include "DW1000.h"
 #include "DW1000Time.h"
