@@ -593,7 +593,11 @@ void DW1000Class::tune() {
 	} else {
 		// TODO proper error/warning handling
 	}
+
 	// TX_POWER (enabled smart transmit power control)
+	// Values are obtained from tables 19 & 20 in user manual:
+	// https://www.qorvo.com/products/d/da007967 
+
 	if(_channel == CHANNEL_1 || _channel == CHANNEL_2) {
 		if(_pulseFrequency == TX_PULSE_FREQ_16MHZ) {
 			if(_smartPower) {
@@ -1112,7 +1116,10 @@ void DW1000Class::suppressFrameCheck(boolean val) {
 
 void DW1000Class::useSmartPower(boolean smartPower) {
 	_smartPower = smartPower;
+
 	setBit(_syscfg, LEN_SYS_CFG, DIS_STXP_BIT, !smartPower);
+	// Bit DIS_STXP belongs to register SYSCFG. 0 = means "not disabled" = Active
+	// Therefore, if smartPower = True (1), i must write a "0" and viceversa.
 }
 
 DW1000Time DW1000Class::setDelay(const DW1000Time& delay) {
@@ -1242,7 +1249,7 @@ void DW1000Class::setChannel(byte channel) {
 		} else {
 			setPreambleCode(PREAMBLE_CODE_64MHZ_18);
 		}
-	} else if(_pulseFrequency == TX_PULSE_FREQ_16MHZ) {
+	} else if(_pulseFrequency == TX_PULSE_FREQ_16MHZ) { //for channels 2 & 5 (same behavior)
 		setPreambleCode(PREAMBLE_CODE_16MHZ_4);
 	} else {
 		setPreambleCode(PREAMBLE_CODE_64MHZ_10);
