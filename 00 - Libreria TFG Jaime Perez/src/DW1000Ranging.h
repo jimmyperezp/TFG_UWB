@@ -60,6 +60,13 @@ struct Measurement {
     bool active;        // Checks if the destiny device is active. 
 };
 
+struct ExistingDevices{
+	uint16_t short_addr;
+	bool is_slave_anchor;
+	bool is_initiator;
+	bool active;
+	float fail_count;
+}
 
 class DW1000RangingClass {
 public:
