@@ -34,6 +34,7 @@ uint16_t Adelay = 16580;
 //Variables y constantes para registrar las measurements recibidas
 #define MAX_DISPOSITIVOS 5
 Medida measurements[MAX_DISPOSITIVOS];
+
 int numDispositivos = 0;
 
 // Para controlar los tiempos y flujo de los datos
@@ -48,6 +49,8 @@ const unsigned long report_time = 40000; // Pido un data report cada 40 segundos
 
 // Variable para controlar el modo actual del esclavo.
 static bool currentModeisInitiator = false;
+
+byte mode[] = DW1000.MODE_1;
 
 //CÓDIGO:
 
@@ -73,7 +76,7 @@ void setup(){
         // Cuando el esclavo manda el data report:
         DW1000Ranging.attachDataReport(DataReport);
               
-        DW1000Ranging.startAsInitiator(DEVICE_ADDR,DW1000.MODE_LONGDATA_RANGE_LOWPOWER, false);
+        DW1000Ranging.startAsInitiator(DEVICE_ADDR,mode, false);
         // Significa que el anchor se encarga de empezar la comunicación (hace polling)
        
     }
@@ -88,7 +91,7 @@ void setup(){
         DW1000Ranging.attachDataRequested(DataRequest);
         
         // Comienzan respondiendo a los polls del maestro (comienzan como respondedores)
-        DW1000Ranging.startAsResponder(DEVICE_ADDR,DW1000.MODE_LONGDATA_RANGE_LOWPOWER, false);  
+        DW1000Ranging.startAsResponder(DEVICE_ADDR,mode, false);  
 
     } 
     own_short_addr = getOwnShortAddress();
@@ -173,6 +176,7 @@ void DataReport(byte* data){
     showData();
 }
 
+
 void DataRequest(byte* short_addr_requester){
 
     // El esclavo entra aquí cuando el maestro le ha enviado un data_request.
@@ -193,18 +197,20 @@ void DataRequest(byte* short_addr_requester){
 
 void ModeChangeRequest(bool toInitiator){
 
+    //The slave enters here when it receives a request to change its mode. 
+    
     if(toInitiator == true){
 
         DW1000.idle();
         delay(100);
-        DW1000Ranging.startAsInitiator(DEVICE_ADDR,DW1000.MODE_LONGDATA_RANGE_LOWPOWER, false);
+        DW1000Ranging.startAsInitiator(DEVICE_ADDR,mode, false);
         delay(100);
     }
     else{
 
         DW1000.idle();
         delay(100);
-        DW1000Ranging.startAsResponder(DEVICE_ADDR,DW1000.MODE_LONGDATA_RANGE_LOWPOWER, false);
+        DW1000Ranging.startAsResponder(DEVICE_ADDR,mode, false);
         delay(100);
         
     }
