@@ -237,7 +237,7 @@ public:
 	static void setPulseFrequency(byte freq);
 	static byte getPulseFrequency();
 	static void setPreambleLength(byte prealen);
-	static void setChannel(byte channel);
+	static void setwChannel(byte channel);
 	static void setPreambleCode(byte preacode);
 	static void useSmartPower(boolean smartPower);
 	
@@ -314,28 +314,7 @@ public:
 	static void newTransmit();
 	static void startTransmit();
 	
-	/* ##### Operation mode selection ############################################ */
-	/** 
-	Specifies the mode of operation for the DW1000. Modes of operation are pre-defined
-	combinations of data rate, pulse repetition frequency, preamble and channel settings
-	that properly go together. If you simply want the chips to work, choosing a mode is 
-	preferred over manual configuration.
-
-	The following modes are pre-configured and one of them needs to be chosen:
-	- `MODE_LONGDATA_RANGE_LOWPOWER` (basically this is 110 kb/s data rate, 16 MHz PRF and long preambles)
-	- `MODE_SHORTDATA_FAST_LOWPOWER` (basically this is 6.8 Mb/s data rate, 16 MHz PRF and short preambles)
-	- `MODE_LONGDATA_FAST_LOWPOWER` (basically this is 6.8 Mb/s data rate, 16 MHz PRF and long preambles)
-	- `MODE_SHORTDATA_FAST_ACCURACY` (basically this is 6.8 Mb/s data rate, 64 MHz PRF and short preambles)
-	- `MODE_LONGDATA_FAST_ACCURACY` (basically this is 6.8 Mb/s data rate, 64 MHz PRF and long preambles)
-	- `MODE_LONGDATA_RANGE_ACCURACY` (basically this is 110 kb/s data rate, 64 MHz PRF and long preambles)
-
-	Note that LOWPOWER and ACCURACY refers to the better power efficiency and improved transmission performance
-	of 16 MHZ and 64 MHZ PRF respectively (see `setPulseFrequency()`).
-
-	The default setting that is selected by `setDefaults()` is MODE_LONGDATA_RANGE_LOWPOWER.
-
-	@param[in] mode The mode of operation, encoded by the above defined constants.
-	*/
+		
 	static void enableMode(const byte mode[]);
 	
 	// use RX/TX specific and general default settings
@@ -408,14 +387,31 @@ public:
 	static constexpr byte FRAME_LENGTH_NORMAL   = 0x00;
 	static constexpr byte FRAME_LENGTH_EXTENDED = 0x03;
 	
+
+
 	/* pre-defined modes of operation (3 bytes for data rate, pulse frequency and 
-	preamble length). */
-	static constexpr byte MODE_LONGDATA_RANGE_LOWPOWER[] = {TRX_RATE_110KBPS, TX_PULSE_FREQ_16MHZ, TX_PREAMBLE_LEN_2048};
-	static constexpr byte MODE_SHORTDATA_FAST_LOWPOWER[] = {TRX_RATE_6800KBPS, TX_PULSE_FREQ_16MHZ, TX_PREAMBLE_LEN_128};
-	static constexpr byte MODE_LONGDATA_FAST_LOWPOWER[]  = {TRX_RATE_6800KBPS, TX_PULSE_FREQ_16MHZ, TX_PREAMBLE_LEN_1024};
-	static constexpr byte MODE_SHORTDATA_FAST_ACCURACY[] = {TRX_RATE_6800KBPS, TX_PULSE_FREQ_64MHZ, TX_PREAMBLE_LEN_128};
-	static constexpr byte MODE_LONGDATA_FAST_ACCURACY[]  = {TRX_RATE_6800KBPS, TX_PULSE_FREQ_64MHZ, TX_PREAMBLE_LEN_1024};
-	static constexpr byte MODE_LONGDATA_RANGE_ACCURACY[] = {TRX_RATE_110KBPS, TX_PULSE_FREQ_64MHZ, TX_PREAMBLE_LEN_2048};
+	preamble length). 
+
+	 Previous mode "names": 
+	
+		Mode_1 = Mode_longdata_range_lowpower
+		Mode_2 = Mode_shortdata_range_lowpower
+		Mode_3 = Mode_longdata_fast_lowpower
+		Mode_4 = Mode_shortdata_fast_accuracy
+		Mode_5 = Mode longdata_fast_accuracy
+		Mode_6 = Mode_longdata_range_accuracy
+	
+		Note that LOWPOWER and ACCURACY refers to the better power efficiency and improved transmission performance of 16 MHZ and 64 MHZ PRF respectively (see `setPulseFrequency()`).
+
+		The default setting that is selected by `setDefaults()` is MODE_1.
+	*/
+
+	static constexpr byte MODE_1[] = {TRX_RATE_110KBPS, TX_PULSE_FREQ_16MHZ, TX_PREAMBLE_LEN_2048};
+	static constexpr byte MODE_2[] = {TRX_RATE_6800KBPS, TX_PULSE_FREQ_16MHZ, TX_PREAMBLE_LEN_128};
+	static constexpr byte MODE_3[]  = {TRX_RATE_6800KBPS, TX_PULSE_FREQ_16MHZ, TX_PREAMBLE_LEN_1024};
+	static constexpr byte MODE_4[] = {TRX_RATE_6800KBPS, TX_PULSE_FREQ_64MHZ, TX_PREAMBLE_LEN_128};
+	static constexpr byte MODE_5[]  = {TRX_RATE_6800KBPS, TX_PULSE_FREQ_64MHZ, TX_PREAMBLE_LEN_1024};
+	static constexpr byte MODE_6[] = {TRX_RATE_110KBPS, TX_PULSE_FREQ_64MHZ, TX_PREAMBLE_LEN_2048};
 
 //private:
 	/* chip select, reset and interrupt pins. */
@@ -480,14 +476,17 @@ public:
 	static void setFrameFilterAllowData(boolean val);
 	static void setFrameFilterAllowAcknowledgement(boolean val);
 	static void setFrameFilterAllowMAC(boolean val);
+
 	//Reserved is used for the Blink message
 	static void setFrameFilterAllowReserved(boolean val);
 	
 	// note: not sure if going to be implemented for now
 	static void setDoubleBuffering(boolean val);
-	// TODO is implemented, but needs testing
-	static void useExtendedFrameLength(boolean val);
-	// TODO is implemented, but needs testing
+	
+	
+	static void setStandardFrameLength(boolean val);
+	
+	
 	static void waitForResponse(boolean val);
 	
 	/* tuning according to mode. */

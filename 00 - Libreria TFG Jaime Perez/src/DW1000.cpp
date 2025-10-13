@@ -76,20 +76,14 @@ boolean    DW1000Class::_debounceClockEnabled = false;
 // modes of operation
 // TODO use enum external, not config array
 // this declaration is needed to make variables accessible while runtime from external code
-constexpr byte DW1000Class::MODE_LONGDATA_RANGE_LOWPOWER[];
-constexpr byte DW1000Class::MODE_SHORTDATA_FAST_LOWPOWER[];
-constexpr byte DW1000Class::MODE_LONGDATA_FAST_LOWPOWER[];
-constexpr byte DW1000Class::MODE_SHORTDATA_FAST_ACCURACY[];
-constexpr byte DW1000Class::MODE_LONGDATA_FAST_ACCURACY[];
-constexpr byte DW1000Class::MODE_LONGDATA_RANGE_ACCURACY[];
-/*
-const byte DW1000Class::MODE_LONGDATA_RANGE_LOWPOWER[] = {TRX_RATE_110KBPS, TX_PULSE_FREQ_16MHZ, TX_PREAMBLE_LEN_2048};
-const byte DW1000Class::MODE_SHORTDATA_FAST_LOWPOWER[] = {TRX_RATE_6800KBPS, TX_PULSE_FREQ_16MHZ, TX_PREAMBLE_LEN_128};
-const byte DW1000Class::MODE_LONGDATA_FAST_LOWPOWER[]  = {TRX_RATE_6800KBPS, TX_PULSE_FREQ_16MHZ, TX_PREAMBLE_LEN_1024};
-const byte DW1000Class::MODE_SHORTDATA_FAST_ACCURACY[] = {TRX_RATE_6800KBPS, TX_PULSE_FREQ_64MHZ, TX_PREAMBLE_LEN_128};
-const byte DW1000Class::MODE_LONGDATA_FAST_ACCURACY[]  = {TRX_RATE_6800KBPS, TX_PULSE_FREQ_64MHZ, TX_PREAMBLE_LEN_1024};
-const byte DW1000Class::MODE_LONGDATA_RANGE_ACCURACY[] = {TRX_RATE_110KBPS, TX_PULSE_FREQ_64MHZ, TX_PREAMBLE_LEN_2048};
-*/
+constexpr byte DW1000Class::MODE_1[];
+constexpr byte DW1000Class::MODE_2[];
+constexpr byte DW1000Class::MODE_3[];
+constexpr byte DW1000Class::MODE_4[];
+constexpr byte DW1000Class::MODE_5[];
+constexpr byte DW1000Class::MODE_6[];
+
+
 // range bias tables (500 MHz in [mm] and 900 MHz in [2mm] - to fit into bytes)
 constexpr byte DW1000Class::BIAS_500_16[];
 constexpr byte DW1000Class::BIAS_500_64[];
@@ -974,6 +968,29 @@ void DW1000Class::setFrameFilterAllowReserved(boolean val) {
 	setBit(_syscfg, LEN_SYS_CFG, FFAR_BIT, val);
 }
 
+void DW1000Class::setStandardFrame(boolean val){
+	
+	//Frame length: if true --> standard use (127 octects)
+		//				if false --> Long frame mode (1023 octets)
+		// See "System Configuration register (0x04)" --> DW1000 User Manual
+
+
+	if(val){  // If I want standard Mode --> Both bits = 1
+
+		setBit(_syscfg, LEN_SYS_CFG, PHR_MODE_LOW, val);
+		setBit(_syscfg, LEN_SYS_CFG, PHR_MODE_HIGH, val);
+
+	}
+
+	else{ // If I want long frame mode --> Both bits = 0
+
+		setBit(_syscfg, LEN_SYS_CFG, PHR_MODE_LOW, !val);
+		setBit(_syscfg, LEN_SYS_CFG, PHR_MODE_HIGH, !val);
+
+	}
+	
+}
+
 
 void DW1000Class::setDoubleBuffering(boolean val) {
 	setBit(_syscfg, LEN_SYS_CFG, DIS_DRXB_BIT, !val);
@@ -990,6 +1007,8 @@ void DW1000Class::setReceiverAutoReenable(boolean val) {
 void DW1000Class::interruptOnSent(boolean val) {
 	setBit(_sysmask, LEN_SYS_MASK, TXFRS_BIT, val);
 }
+
+
 
 void DW1000Class::interruptOnReceived(boolean val) {
 	setBit(_sysmask, LEN_SYS_MASK, RXDFR_BIT, val);
@@ -1115,6 +1134,7 @@ void DW1000Class::suppressFrameCheck(boolean val) {
 }
 
 void DW1000Class::useSmartPower(boolean smartPower) {
+	
 	_smartPower = smartPower;
 
 	setBit(_syscfg, LEN_SYS_CFG, DIS_STXP_BIT, !smartPower);
@@ -1211,10 +1231,17 @@ void DW1000Class::setPreambleLength(byte prealen) {
 	_preambleLength = prealen;
 }
 
-void DW1000Class::useExtendedFrameLength(boolean val) {
-	_extendedFrameLength = (val ? FRAME_LENGTH_EXTENDED : FRAME_LENGTH_NORMAL);
-	_syscfg[2] &= 0xFC;
-	_syscfg[2] |= _extendedFrameLength;
+void DW1000Class::setStandardFrameLength(boolean val) {
+	_extendedFrameLength = (val ? FRAME_LENGTH_NORMAL : FRAME_LENGTH_EXTENDED);
+	
+	/* The Frame length is determined by the PHR_MODE. This is set in the 16th and 17th bits of the sys_cfg register. These bits belong to the second byte. */
+
+	_syscfg[2] &= 0xFC; //0xFC = 11111100. This sets the two lowest bits to 0
+	
+	/*Then, makes a logic OR to set the two previously cleared bits to 0.
+	if frame_length_extended --> _extendedFrameLength  = 0x00
+	if frame_length_normal --> _extendedFrameLength = 0x03 = 00000011*/
+	_syscfg[2] |= _extendedFrameLength; 
 }
 
 void DW1000Class::receivePermanently(boolean val) {
@@ -1271,21 +1298,28 @@ void DW1000Class::setDefaults() {
 	} else if(_deviceMode == RX_MODE) {
 		
 	} else if(_deviceMode == IDLE_MODE) {
-		useExtendedFrameLength(false);
+
+		setStandardFrameLength(true);
+		
 		useSmartPower(false);
 		suppressFrameCheck(false);
+
 		//for global frame filtering
 		setFrameFilter(false);
-		/* old defaults with active frame filter - better set filter in every script where you really need it
-		setFrameFilter(true);
-		//for data frame (poll, poll_ack, range, range report, range failed) filtering
-		setFrameFilterAllowData(true);
-		//for reserved (blink) frame filtering
-		setFrameFilterAllowReserved(true);
-		//setFrameFilterAllowMAC(true);
-		//setFrameFilterAllowBeacon(true);
-		//setFrameFilterAllowAcknowledgement(true);
-		*/
+			/* old defaults with active frame filter - better set filter in every script 	where you really need it
+			setFrameFilter(true);
+			//for data frame (poll, poll_ack, range, range report, range failed) filtering
+			setFrameFilterAllowData(true);
+			//for reserved (blink) frame filtering
+			setFrameFilterAllowReserved(true);
+			//setFrameFilterAllowMAC(true);
+			//setFrameFilterAllowBeacon(true);
+			//setFrameFilterAllowAcknowledgement(true);
+			*/
+		
+		//Frame length:
+		
+
 		interruptOnSent(true);
 		interruptOnReceived(true);
 		interruptOnReceiveFailed(true);
@@ -1294,7 +1328,7 @@ void DW1000Class::setDefaults() {
 		setReceiverAutoReenable(true);
 		// default mode when powering up the chip
 		// still explicitly selected for later tuning
-		enableMode(MODE_LONGDATA_RANGE_LOWPOWER);
+		enableMode(MODE_1);
 		
 		// TODO add channel and code to mode tuples
 	    // TODO add channel and code settings with checks (see DW1000 user manual 10.5 table 61)/
@@ -1749,6 +1783,7 @@ void DW1000Class::writeByte(byte cmd, uint16_t offset, byte data) {
  *		The number of bytes to be written (take care not to go out of bounds of
  * 		the register).
  */
+
 // TODO offset really bigger than byte?
 void DW1000Class::writeBytes(byte cmd, uint16_t offset, byte data[], uint16_t data_size) {
 	byte header[3];

@@ -1038,7 +1038,10 @@ void DW1000RangingClass::transmitDataReport(Measurement* measurements, int numMe
 	//First, generate MACFrame in short Mode.
     _globalMac.generateShortMACFrame(data, _currentShortAddress, dest);
 	
+	//The MAC address is saved from byte 0 to the length of short_mac_len -1. 
+
     // Then, first byte is reserved to the type of message.
+	// It is stored in the index with value short_mac_len
     data[SHORT_MAC_LEN] = DATA_REPORT;
 
     // Variable "index" is used to fill up the data buffer.

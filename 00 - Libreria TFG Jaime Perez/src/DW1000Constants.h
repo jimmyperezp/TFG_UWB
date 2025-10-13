@@ -61,8 +61,8 @@
 #define DIS_STXP_BIT 18  // Change between smart & automatic TX power control
 #define HIRQ_POL_BIT 9
 #define RXAUTR_BIT 29
-#define PHR_MODE_SUB 16
-#define LEN_PHR_MODE_SUB 2
+#define PHR_MODE_LOW 16
+#define PHR_MODE_HIGH 17
 #define RXM110K_BIT 22
 
 // device control register
