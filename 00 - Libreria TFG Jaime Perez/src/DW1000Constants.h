@@ -58,7 +58,7 @@
 #define FFAM_BIT 5
 #define FFAR_BIT 6
 #define DIS_DRXB_BIT 12
-#define DIS_STXP_BIT 18
+#define DIS_STXP_BIT 18  // Change between smart & automatic TX power control
 #define HIRQ_POL_BIT 9
 #define RXAUTR_BIT 29
 #define PHR_MODE_SUB 16
@@ -69,9 +69,9 @@
 #define SYS_CTRL 0x0D
 #define LEN_SYS_CTRL 4
 #define SFCST_BIT 0
-#define TXSTRT_BIT 1
-#define TXDLYS_BIT 2
-#define TRXOFF_BIT 6
+#define TXSTRT_BIT 1  //commands the DW1000 to begin transmission
+#define TXDLYS_BIT 2  // Delayed sending. Uses de DX_TIME
+#define TRXOFF_BIT 6  //  the DW1000 returns to idle mode immediately
 #define WAIT4RESP_BIT 7
 #define RXENAB_BIT 8
 #define RXDLYS_BIT 9
@@ -134,14 +134,14 @@
 #define LEN_TX_STAMP LEN_STAMP
 
 // timing register (for delayed RX/TX)
-#define DX_TIME 0x0A
+#define DX_TIME 0x0A 
 #define LEN_DX_TIME LEN_STAMP
 
 // transmit data buffer
 #define TX_BUFFER 0x09
 #define LEN_TX_BUFFER 1024
-#define LEN_UWB_FRAMES 127
-#define LEN_EXT_UWB_FRAMES 1023
+#define LEN_UWB_FRAMES 127  //Standard IEEE 802.15.4 UWB frames can be up to 127 bytes long
+#define LEN_EXT_UWB_FRAMES 1023 // TFLE. 
 
 // RX frame info
 #define RX_FINFO 0x10
