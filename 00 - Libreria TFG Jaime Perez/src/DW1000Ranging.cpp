@@ -1,32 +1,3 @@
-/*
- * Copyright (c) 2015 by Thomas Trojer <thomas@trojer.net> and Leopold Sayous <leosayous@gmail.com>
- * Decawave DW1000 library for arduino.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- * @file DW1000Ranging.h
- * Arduino global library (source file) working with the DW1000 library 
- * for the Decawave DW1000 UWB transceiver IC.
- *
- * @TODO
- * - remove or debugmode for Serial.print
- * - move strings to flash to reduce ram usage
- * - do not safe duplicate of pin settings
- * - maybe other object structure
- * - use enums instead of preprocessor constants
- */
-
-
 #include "DW1000Ranging.h"
 #include "DW1000Device.h"
 
@@ -306,6 +277,7 @@ void DW1000RangingClass::setReplyTime(uint16_t replyDelayTimeUs) { _replyDelayTi
 void DW1000RangingClass::setResetPeriod(uint32_t resetPeriod) { _resetPeriod = resetPeriod; }
 
 DW1000Device* DW1000RangingClass::searchDistantDevice(byte shortAddress[]) {
+	
 	//we compare the 2 bytes address with the others
 	for(uint16_t i = 0; i < _networkDevicesNumber; i++) { // TODO 8bit?
 		if(memcmp(shortAddress, _networkDevices[i].getByteShortAddress(), 2) == 0) {
