@@ -34,7 +34,7 @@ uint16_t Adelay = 16580;
 //Variables y constantes para registrar las measurements recibidas
 #define MAX_DISPOSITIVOS 5
 Medida measurements[MAX_DISPOSITIVOS];
-
+Existing_devices ExistingDevices[MAX_DISPOSITIVOS];
 int numDispositivos = 0;
 
 // Para controlar los tiempos y flujo de los datos
