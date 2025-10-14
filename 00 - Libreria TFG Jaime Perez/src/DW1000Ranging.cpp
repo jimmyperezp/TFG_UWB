@@ -14,7 +14,10 @@ int16_t      DW1000RangingClass::_lastDistantDevice    = 0; // TODO short, 8bit?
 DW1000Mac    DW1000RangingClass::_globalMac;
 
 //module type (responder or initiator)
-int16_t      DW1000RangingClass::_type; // TODO enum??
+int16_t      DW1000RangingClass::_type; 
+
+//board type (master, anchor or tag)
+uint8_t W1000RangingClass::_myBoardType = 99;
 
 // message flow state
 volatile byte    DW1000RangingClass::_expectedMsgId;
@@ -95,7 +98,7 @@ void DW1000RangingClass::generalStart() {
 	// attach callback for (successfully) sent and received messages
 	DW1000.attachSentHandler(handleSent);
 	DW1000.attachReceivedHandler(handleReceived);
-	// responder starts in receiving mode, awaiting a ranging poll message
+	
 	
 	
 	if(DEBUG) {
@@ -138,8 +141,8 @@ void DW1000RangingClass::startAsResponder(char address[], const byte mode[], con
 	DW1000.convertToByte(address, _currentAddress);
 	//write the address on the DW1000 chip
 	DW1000.setEUI(address);
-	Serial.print("device address: ");
-	Serial.println(address);
+	
+	
 	if (randomShortAddress) {
 		//we need to define a random short address:
 		randomSeed(analogRead(0));
@@ -161,18 +164,19 @@ void DW1000RangingClass::startAsResponder(char address[], const byte mode[], con
 	
 	//defined type as responder
 	_type = RESPONDER;
+	_myBoardType = boardType;
 	
-	Serial.println("### RESPONDER ###");
 	
 }
 
-void DW1000RangingClass::startAsInitiator(char address[], const byte mode[], const bool randomShortAddress) {
+void DW1000RangingClass::startAsInitiator(char address[], const byte mode[], const bool randomShortAddress, const uint16_t boardType, const uint8_t boardType) {
+	
 	//save the address
 	DW1000.convertToByte(address, _currentAddress);
 	//write the address on the DW1000 chip
 	DW1000.setEUI(address);
-	Serial.print("device address: ");
-	Serial.println(address);
+	
+	
 	if (randomShortAddress) {
 		//we need to define a random short address:
 		randomSeed(analogRead(0));
@@ -191,15 +195,18 @@ void DW1000RangingClass::startAsInitiator(char address[], const byte mode[], con
 	
 	generalStart();
 	//defined type as initiator
+
 	_type = INITIATOR;
+	_myBoardType = boardType;
 	
-	Serial.println("### INITIATOR ###");
 }
 
 boolean DW1000RangingClass::addNetworkDevices(DW1000Device* device, boolean shortAddress) {
 	boolean   addDevice = true;
+
 	//we test our network devices array to check
 	//we don't already have it
+	
 	for(uint8_t i = 0; i < _networkDevicesNumber; i++) {
 		if(_networkDevices[i].isAddressEqual(device) && !shortAddress) {
 			//the device already exists
@@ -480,10 +487,15 @@ void DW1000RangingClass::loop() {
 			
 			byte address[2];
 			_globalMac.decodeLongMACFrame(data, address);
-			//we create a new device with the responder
+
+			//we create a new device with the responder, specifying its address & indicating it's a short  one.
 			DW1000Device myResponder(address, true);
 			
+			uint8_t responderboardType = data[LONG_MAC_LEN+1];
+
 			if(addNetworkDevices(&myResponder, true)) {
+				_networkDevices[_networkDevicesNumber-1].setBoardType(responderType);
+
 				if(_handleNewDevice != 0) {
 					(*_handleNewDevice)(&myResponder);
 				}
@@ -491,7 +503,7 @@ void DW1000RangingClass::loop() {
 			
 			noteActivity();
 		}
-		else {
+	else {
 			//we have a short mac layer frame !
 			byte address[2];
 			_globalMac.decodeShortMACFrame(data, address);
@@ -519,6 +531,7 @@ void DW1000RangingClass::loop() {
 					_protocolFailed = true;
 				}
 				if(messageType == POLL) {
+					
 					//we receive a POLL which is a broacast message
 					//we need to grab info about it
 					int16_t numberDevices = 0;
@@ -545,6 +558,8 @@ void DW1000RangingClass::loop() {
 							//we note activity for our device:
 							myDistantDevice->noteActivity();
 							//we indicate our next receive message for our ranging protocole
+							uint8_t initiatorType = data[SHORT_MAC_LEN + 2 + 4*numberDevices];
+    						myDistantDevice->setBoardType(initiatorType);
 							_expectedMsgId = RANGE;
 							transmitPollAck(myDistantDevice);
 							noteActivity();
@@ -779,7 +794,7 @@ void DW1000RangingClass::transmitRangingInit(DW1000Device* myDistantDevice) {
 	_globalMac.generateLongMACFrame(data, _currentShortAddress, myDistantDevice->getByteAddress());
 	//we define the function code
 	data[LONG_MAC_LEN] = RANGING_INIT;
-	
+	data[LONG_MAC_LEN + 1] = _myBoardType;
 	copyShortAddress(_lastSentToShortAddress, myDistantDevice->getByteShortAddress());
 	
 	transmit(data);
@@ -789,7 +804,9 @@ void DW1000RangingClass::transmitPoll(DW1000Device* myDistantDevice) {
 	
 	transmitInit();
 	
-	if(myDistantDevice == nullptr) {
+	if(myDistantDevice == nullptr) { //If the polling is done via broadcast
+		//Right now, it is always sent via broadcast.
+
 		//we need to set our timerDelay:
 		_timerDelay = DEFAULT_TIMER_DELAY+(uint16_t)(_networkDevicesNumber*3*DEFAULT_REPLY_DELAY_TIME/1000);
 		
@@ -804,17 +821,19 @@ void DW1000RangingClass::transmitPoll(DW1000Device* myDistantDevice) {
 			_networkDevices[i].setReplyTime((2*i+1)*DEFAULT_REPLY_DELAY_TIME);
 			//we write the short address of our device:
 			memcpy(data+SHORT_MAC_LEN+2+4*i, _networkDevices[i].getByteShortAddress(), 2);
+			//Clears 4 bytes per device. The first 2 are for the shortAddress
 			
 			//we add the replyTime
 			uint16_t replyTime = _networkDevices[i].getReplyTime();
 			memcpy(data+SHORT_MAC_LEN+2+2+4*i, &replyTime, 2);
+			//These go in the pending freed up 2 bytes from before
 			
 		}
-		
+		data[SHORT_MAC_LEN+2+4*_networkDevicesNumber] = _myBoardType;
 		copyShortAddress(_lastSentToShortAddress, shortBroadcast);
 		
 	}
-	else {
+	else { //Polling via unicast.
 		//we redefine our default_timer_delay for just 1 device;
 		_timerDelay = DEFAULT_TIMER_DELAY;
 		
@@ -824,7 +843,7 @@ void DW1000RangingClass::transmitPoll(DW1000Device* myDistantDevice) {
 		data[SHORT_MAC_LEN+1] = 1;
 		uint16_t replyTime = myDistantDevice->getReplyTime();
 		memcpy(data+SHORT_MAC_LEN+2, &replyTime, sizeof(uint16_t)); // todo is code correct?
-		
+		data[SHORT_MAC_LEN+2 + sizeof(uint16_t)] = _myBoardType;
 		copyShortAddress(_lastSentToShortAddress, myDistantDevice->getByteShortAddress());
 	}
 	
