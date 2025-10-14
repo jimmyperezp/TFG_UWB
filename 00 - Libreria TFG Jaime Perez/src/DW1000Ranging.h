@@ -60,6 +60,7 @@ struct Measurement {
     bool active;        // Checks if the destiny device is active. 
 };
 
+// Struct to know the existing devices of the system. Used to send messages via unicast.
 struct ExistingDevices{
 	uint16_t short_addr;
 	bool is_slave_anchor;
@@ -67,6 +68,7 @@ struct ExistingDevices{
 	bool active;
 	float fail_count;
 }
+
 
 class DW1000RangingClass {
 public:
@@ -78,8 +80,8 @@ public:
 	static void    initCommunication(uint8_t myRST = DEFAULT_RST_PIN, uint8_t mySS = DEFAULT_SPI_SS_PIN, uint8_t myIRQ = 2);
 	static void    configureNetwork(uint16_t deviceAddress, uint16_t networkId, const byte mode[]);
 	static void    generalStart();
-	static void    startAsResponder(char address[], const byte mode[], const bool randomShortAddress = true);
-	static void    startAsInitiator(char address[], const byte mode[], const bool randomShortAddress = true);
+	static void    startAsResponder(char address[], const byte mode[], const bool randomShortAddress = true,uint8_t boardType = 0);
+	static void    startAsInitiator(char address[], const byte mode[], const bool randomShortAddress = true, uint8_t boardType = 0);
 	static boolean addNetworkDevices(DW1000Device* device, boolean shortAddress);
 	static boolean addNetworkDevices(DW1000Device* device);
 	static void    removeNetworkDevices(int16_t index);
@@ -183,6 +185,8 @@ private:
 	//ranging filter
 	static volatile boolean _useRangeFilter;
 	static uint16_t         _rangeFilterValue;
+	
+	static uint8_t  _myBoardType;
 	//_bias correction
 	static char  _bias_RSL[17]; // TODO remove or use
 	//17*2=34 bytes in SRAM
