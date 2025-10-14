@@ -24,6 +24,11 @@
 
 #define INACTIVITY_TIME 1000
 
+#define MASTER_ANCHOR 1
+#define SLAVE_ANCHOR 2
+#define TAG 3
+
+
 #ifndef _DW1000Device_H_INCLUDED
 #define _DW1000Device_H_INCLUDED
 
@@ -54,10 +59,14 @@ public:
 	void setQuality(float quality);
 	
 	void setReplyDelayTime(uint16_t time) { _replyDelayTimeUS = time; }
-	
+	void setBoardType(uint8_t boardType) {_boardType = boardType;}
 	void setIndex(int8_t index) { _index = index; }
+
+	
 	
 	//getters
+
+	uint8_t getBoardType(){return _boardType;}
 	uint16_t getReplyTime() { return _replyDelayTimeUS; }
 	
 	byte* getByteAddress();
@@ -98,6 +107,7 @@ private:
 	uint16_t     _replyDelayTimeUS;
 	int8_t       _index; // not used
 	
+	uint16_t _boardType;
 	int16_t _range;
 	int16_t _RXPower;
 	int16_t _FPPower;
