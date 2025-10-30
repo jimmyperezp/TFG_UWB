@@ -62,8 +62,11 @@ Primero, se han declarado los nuevos tipos de mensajes que se pueden enviar entr
 
 //messages sent for data and flow control
 #define MODE_SWITCH 6 
-#define REQUEST_DATA 7 
-#define DATA_REPORT 8 
+#define MODE_SWITCH_ACK 7
+#define REQUEST_DATA 8 
+#define DATA_REPORT 9
+#define STOP_RANGING 10
+#define STOP_RANGING_ACK 11
 
 ```
 Después, se han creado los métodos para enviar dichos mensajes: 
@@ -103,12 +106,11 @@ El código está adaptado para su escalabilidad, pero las pruebas se han realiza
 
 ### Mejoras pendientes: TO-DO list:
 
-**Problema #1**: Escalabilidad. Unicast frente a broadcasting.
-- Actualmente, solo hay un anchor esclavo, por lo que basta con hacer broadcast desde el maestro para solicitar su cambio de modo de funcionamiento. Sin embargo, si escalamos el sistema, será necesario cambiar los slave anchors uno por uno, dándoles suficiente tiempo como para que realicen todas sus medidas y las guarden correctamente. 
+**Problema #1**: Escalabilidad. Añadir más esclavos
 
-- Al hacer el data report sucede lo mismo. Al solicitarlo por broadcast, todos los slave anchors enviarán sus resultados a la vez, por lo que el maestro puede tener problemas de interferencia. 
+- Actualmente, el código está adaptado para funcionar utilizando 1 maestro, 1 esclavo y 1 tag. Habría que realizar la lógica necesaria para escalar el sistema y trabajar con múltiples anclas esclavas.
 
-**Solución**: Si aumenta el número de slave anchors, hay que implementar una manera de enviar los mensajes de switch_mode, data_request y data_report haciendo unicast. Hay que tener en cuenta que al cambiar de modo y enviar los datos, las placas tienen un pequeño delay, por lo que hay que darles tiempo suficiente para realizar y mandar sus medidas correctamente.
+
 
 **Problema #2**: Comprobar longitud del data Report
 
@@ -118,16 +120,7 @@ El código está adaptado para su escalabilidad, pero las pruebas se han realiza
 **Solución**: Debería hacer un clipping, es decir, no hacer un return sin guardar nada, sino al menos registrar todos los datos válidos que sí que quepan dentro del LEN_DATA. 
 
 
-**Problema #3**: Momento de solicitar el data report
-
-En la versión actual del código, el maestro le pide al esclavo que vambie de modo periódicamente. De igual manera, solicita el data report también periódicamente.   
-Esta situación presenta un problema: 
-- Si el esclavo no ha cambiado a modo "responder" cuando le tocaba, estará en modo "initiator" cuando reciba el data request. A priori no hay problema por esto, pero el periodo en el que está recibiendo datos en este modo es mucho menor que si fuera "responder". 
-
-**Solución**: Podría añadir una flag interna en la librería para que, cuando se reciba el mode switch, registre el estado actual. De esta manera, puedo incluir alguna sección de lógica adicional para enviar el data request solo cuando el esclavo está respondiendo, avisando al usuario si no es así.  
-Además, debo afinar los tiempos para hacer un data report una vez en cada ciclo, es decir, cada vez que los esclavos pasan a modo "responder", y una vez les ha dado tiempo a hacer sus medidas, les pido el data report antes de volver a pasar a "initiator".
-
 <br><br>
 ------------
 Autor: Jaime Pérez  
-Última modificación: 2/9/2025
+Última modificación: 30/10/2025
