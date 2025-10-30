@@ -19,9 +19,15 @@
 #define RANGING_INIT 5
 
 //Messages used to control the data flow: 
-#define MODE_SWITCH 6  // To request a switch in mode. From initiator to responder (or viceversa)
-#define REQUEST_DATA 7 // The master anchor sends this message to request the slave anchors the data they've collected (this data includes the measurements from the slave to the rest of devices)
-#define DATA_REPORT 8 // The slave anchors respond with this message. In it, the requested data is codified.
+#define MODE_SWITCH 6 // To request a switch in mode. From initiator to responder (or viceversa)
+#define MODE_SWITCH_ACK 7
+
+#define REQUEST_DATA 8 // The master anchor sends this message to request the slave anchors the data they've collected (this data includes the measurements from the slave to the rest of devices)
+#define DATA_REPORT 9 // The slave anchors respond with this message. In it, the requested data is codified.
+
+#define STOP_RANGING 10
+#define STOP_RANGING_ACK 11
+
 
 //Length of tha payload in the sent messages.
 #define LEN_DATA 90
@@ -35,7 +41,7 @@
 
 //Default value
 //in ms
-#define DEFAULT_RESET_PERIOD 200
+#define DEFAULT_RESET_PERIOD 500
 //in us
 #define DEFAULT_REPLY_DELAY_TIME 7000
 
@@ -61,13 +67,17 @@ struct Measurement {
 };
 
 // Struct to know the existing devices of the system. Used to send messages via unicast.
-struct ExistingDevices{
+struct ExistingDevice{
+	
 	uint16_t short_addr;
+	byte byte_short_addr[2];
 	bool is_slave_anchor;
-	bool is_initiator;
+	bool is_responder;
 	bool active;
-	float fail_count;
-}
+	bool mode_switch_pending;
+	bool data_report_pending;
+	
+};
 
 
 class DW1000RangingClass {
@@ -80,8 +90,8 @@ public:
 	static void    initCommunication(uint8_t myRST = DEFAULT_RST_PIN, uint8_t mySS = DEFAULT_SPI_SS_PIN, uint8_t myIRQ = 2);
 	static void    configureNetwork(uint16_t deviceAddress, uint16_t networkId, const byte mode[]);
 	static void    generalStart();
-	static void    startAsResponder(char address[], const byte mode[], const bool randomShortAddress = true,uint8_t boardType = 0);
-	static void    startAsInitiator(char address[], const byte mode[], const bool randomShortAddress = true, uint8_t boardType = 0);
+	static void    startAsResponder(char address[], const byte mode[], const bool randomShortAddress = true,const uint8_t boardType = 0);
+	static void    startAsInitiator(char address[], const byte mode[], const bool randomShortAddress = true, const uint8_t boardType = 0);
 	static boolean addNetworkDevices(DW1000Device* device, boolean shortAddress);
 	static boolean addNetworkDevices(DW1000Device* device);
 	static void    removeNetworkDevices(int16_t index);
@@ -89,7 +99,7 @@ public:
 	//setters
 	static void setReplyTime(uint16_t replyDelayTimeUs);
 	static void setResetPeriod(uint32_t resetPeriod);
-	
+	static void setStopRanging(bool stop_ranging_input);
 	//getters
 	static byte* getCurrentAddress() { return _currentAddress; };
 	
@@ -97,6 +107,7 @@ public:
 	
 	static uint8_t getNetworkDevicesNumber() { return _networkDevicesNumber; };
 	
+
 	//ranging functions
 	static int16_t detectMessageType(byte datas[]); // TODO check return type
 	static void loop();
@@ -114,28 +125,45 @@ public:
 	static void attachInactiveDevice(void (* handleInactiveDevice)(DW1000Device*)) { _handleInactiveDevice = handleInactiveDevice; };
 	
 	//Callback for the change request. It aims to a function with a bool parameter (toInitiator)
-	static void attachModeChangeRequest(void (* handleModeChange)(bool toInitiator)){ _handleModeChangeRequest = handleModeChange;}
+	static void attachModeSwitchRequested(void (* handleModeSwitch)(byte* shortAddress, bool toInitiator)){ _handleModeSwitchRequest = handleModeSwitch;}
 
+	// Callback for when the Mode Switch is made. Sent from the slave back to the master.
+	static void attachModeSwitchAck(void (* handleModeSwitchAck)(bool isInitiator)){ _handleModeSwitchAck = handleModeSwitchAck;}
 	// Callback for when data is requested (slave anchors have access to this)
-	static void attachDataRequest(void (*handleDataRequest)(byte* shortAddress)){ _handleDataRequest = handleDataRequest; }
+	static void attachDataRequested(void (*handleDataRequest)(byte* shortAddress)){ _handleDataRequest = handleDataRequest; }
 
 	//Callback for when the master receives a data_report message (only the master anchor has access to this)
 	static void attachDataReport(void (*handleDataReport)(byte* dataReport)){ _handleDataReport = handleDataReport;}
 
+	static void attachStopRangingRequested( void(*handleStopRanging)(byte* shortAddress)){
+		_handleStopRanging = handleStopRanging;	}
+
+	static void attachStopRangingAck(void(*handleStopRangingAck)(void)){_handleStopRangingAck = handleStopRangingAck;}
 
 	static DW1000Device* getDistantDevice();
 	static DW1000Device* searchDistantDevice(byte shortAddress[]);
+	static DW1000Device* searchDeviceByUintShortAdd(uint16_t shortAddress);
 	
 	//FOR DEBUGGING
 	static void visualizeDatas(byte datas[]);
 
-	//To request a switch in mode operation. 
+	//Mode Swith: 
+	//Request: sent by the master to the slaves.
 	void transmitModeSwitch(bool toInitiator, DW1000Device* device = nullptr);
+	//Acknowledgement: sent by the master back to the master.
+	void transmitModeSwitchAck(DW1000Device* device,bool isInitiator);
 
+	void transmitStopRanging(DW1000Device* device);
+
+	void transmitStopRangingAck(DW1000Device* device);
+
+	// To request a data request --> Sent by the master. Receives as parameter, the target device 
 	void transmitDataRequest(DW1000Device* device = nullptr);
 
+	// To send the data report. Sent by the slaves to the master.
 	void transmitDataReport(Measurement* measurements, int numMedidas, DW1000Device* device = nullptr);
 
+	
 private:
 	//other devices in the network
 	static DW1000Device _networkDevices[MAX_DEVICES];
@@ -154,10 +182,15 @@ private:
 	static void (* _handleNewDevice)(DW1000Device*);
 	static void (* _handleInactiveDevice)(DW1000Device*);
 
-	static void (* _handleModeChangeRequest)(bool toInitiator);
+	static void (* _handleModeSwitchRequest)(byte* shortAddress, bool toInitiator);
+	static void (* _handleModeSwitchAck)(bool isInitiator);
 
 	static void (* _handleDataRequest)(byte* shortAddress);
 	static void (* _handleDataReport)(byte* dataReport);
+
+	static void (* _handleStopRanging)(byte* shortAddress);
+	static void (* _handleStopRangingAck)(void);
+	
 	
 	//sketch type (Initiator or responder)
 	static int16_t          _type; //0 for Initiator and 1 for responder
@@ -195,6 +228,9 @@ private:
 	static char  _bias_PRF_64[17]; // TODO remove or use
 	
 	
+	static bool stop_ranging;
+	static bool ranging_enabled; 
+	
 	//methods
 	static void handleSent();
 	static void handleReceived();
@@ -222,13 +258,7 @@ private:
 	static void transmitRange(DW1000Device* myDistantDevice);
 	
 	
-	//To request a switch in mode operation. 
-	void transmitModeSwitch(bool toInitiator, DW1000Device* device = nullptr);
-
-	//To centralize data in master anchor
-	void transmitDataRequest(DW1000Device* device = nullptr);
-	void transmitDataReport(Measurement* measurements, int numMedidas, DW1000Device* device = nullptr);
-
+	
 	
 	//methods for range computation
 	static void computeRangeAsymmetric(DW1000Device* myDistantDevice, DW1000Time* myTOF);
